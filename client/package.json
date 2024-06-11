@@ -1,0 +1,24 @@
+{
+    "name": "track-mate",
+    "private": true,
+    "version": "0.0.0",
+    "type": "module",
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build",
+        "preview": "vite preview",
+        "pretty": "prettier --write \"./**/*.{js,json,svelte}\"",
+        "storybook": "storybook dev -p 6006",
+        "build-storybook": "storybook build"
+    },
+    "devDependencies": {
+        "@storybook/addon-svelte-csf": "^4.1.3",
+        "@storybook/svelte-vite": "^8.1.6",
+        "@sveltejs/vite-plugin-svelte": "^3.0.2",
+        "prettier": "^3.3.2",
+        "prettier-plugin-svelte": "^3.2.4",
+        "storybook": "^8.1.6",
+        "svelte": "^4.2.12",
+        "vite": "^5.2.0"
+    }
+}
