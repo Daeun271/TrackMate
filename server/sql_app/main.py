@@ -1,9 +1,7 @@
 from fastapi import Depends, FastAPI, HTTPException
 from sqlalchemy.orm import Session
-
 from . import crud, models, schemas
 from .database import SessionLocal, engine
-
 import datetime
 
 models.Base.metadata.create_all(bind=engine)
@@ -28,18 +26,17 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     return crud.create_user(db=db, user=user)
 
 
-@app.get("/users/", response_model=list[schemas.User])
-def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    users = crud.get_users(db, skip=skip, limit=limit)
-    return users
-
-
 @app.get("/users/{user_id}", response_model=schemas.User)
 def read_user(user_id: int, db: Session = Depends(get_db)):
     db_user = crud.get_user(db, user_id=user_id)
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
     return db_user
+
+
+@app.put("/users/", response_model=schemas.User)
+def update_user_share_status(user: schemas.UserUpdate, db: Session = Depends(get_db)):
+    return crud.update_user_share_status(db=db, user=user)
 
 
 @app.post("/users/{user_id}/water_intakes/", response_model=schemas.WaterIntake)
@@ -49,16 +46,28 @@ def create_water_intake_for_user(
     return crud.create_user_water_intake(db=db, water_intake=water_intake, user_id=user_id)
 
 
-@app.get("/users/{user_id}/water_intakes/", response_model=list[schemas.WaterIntake])
-def read_water_intakes_by_user_id(user_id: int, db: Session = Depends(get_db)):
-    return crud.get_water_intakes_by_user_id(db, user_id=user_id)
-
-
 @app.get("/users/{user_id}/water_intakes/{date}", response_model=list[schemas.WaterIntake])
-def read_water_intakes_by_user_id_and_date(user_id: int, date: datetime.date, db: Session = Depends(get_db)):
-    return crud.get_water_intakes_by_user_id_and_date(db, user_id=user_id, date=date)
+def get_total_water_intake_by_user_id_and_date(user_id: int, date: datetime.date, db: Session = Depends(get_db)):
+    return crud.get_total_water_intakes_by_user_id_and_date(db, user_id=user_id, date=date)
 
 
-@app.get("/users/{user_id}/water_intakes/today", response_model=float)
-def read_today_water_intakes_sum_by_user_id(user_id: int, db: Session = Depends(get_db)):
-    return crud.get_today_water_intakes_sum_by_user_id(db, user_id=user_id)
+@app.post("/users/{user_id}/food_intakes/", response_model=schemas.FoodIntake)
+def create_food_intake_for_user(
+    user_id: int, food_intake: schemas.FoodIntakeCreate, db: Session = Depends(get_db)
+):
+    return crud.create_user_food_intake(db=db, food_intake=food_intake, user_id=user_id)
+
+
+@app.get("/users/{user_id}/food_intakes/", response_model=list[schemas.FoodIntake])
+def read_food_intakes_by_user_id(user_id: int, db: Session = Depends(get_db)):
+    return crud.get_food_intakes_by_user_id(db, user_id=user_id)
+
+
+@app.get("/users/{user_id}/food_intakes/{date}", response_model=list[schemas.FoodIntake])
+def read_food_intakes_by_user_id_and_date(user_id: int, date: datetime.date, db: Session = Depends(get_db)):
+    return crud.get_food_intakes_by_user_id_and_date(db, user_id=user_id, date=date)
+
+
+@app.get("/users/{user_id}/food_intakes/", response_model=list[schemas.FoodIntake])
+def read_food_intakes_by_user_id_and_date_range(user_id: int, start_date: datetime.date, end_date: datetime.date, db: Session = Depends(get_db)):
+    return crud.get_food_intakes_by_user_id_and_date_range(db, user_id=user_id, start_date=start_date, end_date=end_date)
