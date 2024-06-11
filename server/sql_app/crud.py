@@ -2,7 +2,10 @@ from sqlalchemy.orm import Session
 from sqlalchemy.sql import func
 from . import models, schemas
 import datetime
+from passlib.context import CryptContext
 
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def get_user(db: Session, user_id: int):
     return db.query(models.User).filter(models.User.id == user_id).first()
@@ -13,21 +16,21 @@ def get_user_by_email(db: Session, email: str):
 
 
 def create_user(db: Session, user: schemas.UserCreate):
-    fake_hashed_password = user.password + "notreallyhashed"
-    db_user = models.User(email=user.email, hashed_password=fake_hashed_password)
+    hashed_password = pwd_context.hash(user.password)
+    db_user = models.User(user_name=user.user_name, email=user.email, hashed_password=hashed_password)
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
     return db_user
 
 
-def update_user_share_status(db: Session, user: schemas.UserUpdate):
+def update_user_share_status(db: Session, user: schemas.UserSettingsShareStatus):
     db_user = db.query(models.User).filter(models.User.id == user.id).first()
+    if db_user is None:
+        return
     db_user.is_shared_water_intake = user.is_shared_water_intake
     db_user.is_shared_food_intake = user.is_shared_food_intake
     db.commit()
-    db.refresh(db_user)
-    return db_user
 
 
 def get_total_water_intakes_by_user_id_and_date(db: Session, user_id: int, date: datetime.date):
@@ -40,10 +43,6 @@ def create_user_water_intake(db: Session, water_intake: schemas.WaterIntakeCreat
     db.commit()
     db.refresh(db_water_intake)
     return db_water_intake
-
-
-def get_food_intakes_by_user_id_and_date(db: Session, user_id: int, date: datetime.date):
-    return db.query(models.FoodIntake).filter(models.FoodIntake.user_id == user_id, models.FoodIntake.date == date).all()
 
 
 def get_food_intakes_by_user_id_and_date_range(db: Session, user_id: int, start_date: datetime.date, end_date: datetime.date):

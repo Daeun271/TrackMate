@@ -1,6 +1,8 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator, EmailStr
+from pydantic_core.core_schema import FieldValidationInfo
 from datetime import date, time
 from typing import Optional
+from fastapi import HTTPException
 
 
 class WaterIntakeBase(BaseModel):
@@ -40,20 +42,42 @@ class FoodIntake(FoodIntakeBase):
 
        
 class UserBase(BaseModel):
-    email: str
+    user_name: str
+    email: EmailStr
 
 
 class UserCreate(UserBase):
     password: str
-
-
-class User(UserBase):
-    id: int
     
+    @field_validator('user_name', 'email', 'password')
+    def not_empty(cls, v, info: FieldValidationInfo):
+        if not v or not v.strip():
+            raise HTTPException(status_code=422, detail=f'empty {info.field_name}')
+        
+        return v
+        
+    @field_validator('password')
+    def validate_password(cls, v):
+        if len(v) < 8:
+            raise HTTPException(status_code=422, detail='Password must be at least 8 characters')
+        
+        if not any(char.isdigit() for char in v):
+            raise HTTPException(status_code=422, detail='Password must have at least one numeral')
+        
+        if not any(char.isalpha() for char in v):
+            raise HTTPException(status_code=422, detail='Password must have at least one letter')
+        
+        return v
+
+
+class UserId(BaseModel):
+    id: int   
+
+class User(UserBase, UserId):
     class Config:
         orm_mode = True
 
 
-class UserUpdate(User):
+class UserSettingsShareStatus(UserId):
     is_shared_water_intake: bool = False
     is_shared_food_intake: bool = False
