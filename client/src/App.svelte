@@ -1,13 +1,21 @@
 <script>
-    import Header from './components/Header.svelte';
-    import Footer from './components/Footer.svelte';
+    import MobileHeader from './components/MobileHeader.svelte';
+    import DesktopHeader from './components/DesktopHeader.svelte';
+    import MobileFooter from './components/MobileFooter.svelte';
+    import DesktopFooter from './components/DesktopFooter.svelte';
     import WaterIntake from './components/pages/WaterIntake.svelte';
 
     import { currentTab } from './tabs.js';
+
+    let isMobile = window.matchMedia('(max-width: 480px)').matches;
 </script>
 
 <div class="app">
-    <Header />
+    {#if isMobile}
+        <MobileHeader />
+    {:else}
+        <DesktopHeader />
+    {/if}
     <main>
         {#if $currentTab === 'home'}
             Home
@@ -19,11 +27,17 @@
             <WaterIntake />
         {:else if $currentTab === 'community'}
             Community
+        {:else if $currentTab === 'settings'}
+            Settings
         {:else}
             <p>404: Page not found</p>
         {/if}
     </main>
-    <Footer />
+    {#if isMobile}
+        <MobileFooter />
+    {:else}
+        <DesktopFooter />
+    {/if}
 </div>
 
 <style>

@@ -1,4 +1,6 @@
-<header>Test</header>
+<header>
+    <p>Header</p>
+</header>
 
 <style>
     header {
