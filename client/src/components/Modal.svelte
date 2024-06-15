@@ -1,34 +1,45 @@
 <script>
     import { createEventDispatcher } from 'svelte';
 
+    export let isOpen = false;
+
     const dispatch = createEventDispatcher();
 
+    export function setOpen(value) {
+        isOpen = value;
+    }
+
     function onClick() {
+        isOpen = false;
         dispatch('close');
     }
 </script>
 
-<div class="modal-container">
-    <button class="modal-close" on:click={onClick}>
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke-width="1.5"
-            stroke="currentColor"
-            class="size-6"
-        >
-            <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M6 18 18 6M6 6l12 12"
-            />
-        </svg>
-    </button>
-    <div class="modal-content">
-        <slot></slot>
+{#if isOpen}
+    <div class="modal-container">
+        <button class="modal-close" on:click={onClick}>
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="1.5"
+                stroke="currentColor"
+                class="size-6"
+            >
+                <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M6 18 18 6M6 6l12 12"
+                />
+            </svg>
+        </button>
+        <div class="modal-content">
+            <slot></slot>
+        </div>
     </div>
-</div>
+{/if}
+
+<svelte:window on:keydown={(e) => e.key === 'Escape' && isOpen && onClick()} />
 
 <style>
     .modal-container {

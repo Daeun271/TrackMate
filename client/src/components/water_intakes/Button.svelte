@@ -14,12 +14,15 @@
 
 <style>
     button {
+        appearance: none;
         background-color: #007bff;
         color: white;
         border: none;
         border-radius: 5px;
+        outline: none;
         padding: 10px 20px;
         margin: 20px 0 0 0;
         cursor: pointer;
+        font-size: 16px;
     }
 </style>

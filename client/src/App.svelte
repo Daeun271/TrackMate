@@ -1,8 +1,6 @@
 <script>
-    import MobileHeader from './components/MobileHeader.svelte';
     import DesktopHeader from './components/DesktopHeader.svelte';
     import MobileFooter from './components/MobileFooter.svelte';
-    import DesktopFooter from './components/DesktopFooter.svelte';
     import WaterIntake from './components/pages/WaterIntake.svelte';
 
     import { currentTab } from './tabs.js';
@@ -11,9 +9,7 @@
 </script>
 
 <div class="app">
-    {#if isMobile}
-        <MobileHeader />
-    {:else}
+    {#if !isMobile}
         <DesktopHeader />
     {/if}
     <main>
@@ -35,8 +31,6 @@
     </main>
     {#if isMobile}
         <MobileFooter />
-    {:else}
-        <DesktopFooter />
     {/if}
 </div>
 

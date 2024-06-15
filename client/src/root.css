@@ -10,4 +10,6 @@ body {
     padding: 0;
     overscroll-behavior-y: none;
     overflow: hidden;
+
+    touch-action: pan-y;
 }
