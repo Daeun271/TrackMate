@@ -17,6 +17,7 @@
 
 {#if isOpen}
     <div class="modal-container">
+        <slot name="modal-background"></slot>
         <button class="modal-close" on:click={onClick}>
             <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -43,7 +44,6 @@
 
 <style>
     .modal-container {
-        display: block;
         position: fixed;
         top: 0;
         left: 0;

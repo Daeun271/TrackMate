@@ -3,28 +3,106 @@
     import CircleButton from '../water_intakes/CircleButton.svelte';
     import Modal from '../Modal.svelte';
     import Button from '../water_intakes/Button.svelte';
+    import * as waterIntake from '../../user.js';
 
-    let volume = 0;
-
-    $: water_level = Math.min(volume / 2, 1);
+    let newVolume = 0;
 
     let modalOpen = false;
+
+    let waterIntakePromise = getWaterIntake();
+    async function getWaterIntake() {
+        const waterIntakeTotalRes = await waterIntake.getWaterIntakesTotal(
+            2,
+            new Date().toISOString(),
+        );
+
+        return waterIntakeTotalRes;
+    }
+
+    async function updateWaterIntake() {
+        await waterIntake.addWaterIntake(
+            newVolume,
+            new Date().toISOString(),
+            2,
+        );
+        modalOpen = false;
+        waterIntakePromise = getWaterIntake();
+    }
+
+    function openModal() {
+        newVolume = 0;
+        modalOpen = true;
+    }
+
+    $: waterLevel = Math.min(newVolume / 2, 1);
+    $: levelPercent = -90 * waterLevel + 90;
 </script>
 
 <div class="waterintake-wrapper">
-    <p>Today's Water Intake</p>
-    <p>{volume} L</p>
-    <div>
-        <WaterCup level={water_level} />
-    </div>
-    <Button btnTxt="Record" on:click={() => (modalOpen = true)} />
+    {#await waterIntakePromise}
+        <p>loading...</p>
+    {:then waterIntakeTotalRes}
+        {#if waterIntakeTotalRes.total_volume >= 0 && waterIntakeTotalRes.total_volume < 0.5}
+            <p>Let's drink 2L of water!</p>
+        {:else if waterIntakeTotalRes.total_volume >= 0.5 && waterIntakeTotalRes.total_volume < 1}
+            <p>Keep going!</p>
+        {:else if waterIntakeTotalRes.total_volume >= 1 && waterIntakeTotalRes.total_volume < 1.5}
+            <p>Halfway there!</p>
+        {:else if waterIntakeTotalRes.total_volume >= 1.5 && waterIntakeTotalRes.total_volume < 2}
+            <p>Almost there!</p>
+        {:else if waterIntakeTotalRes.total_volume >= 2}
+            <p>Good job!</p>
+        {/if}
+
+        <p>{waterIntakeTotalRes.total_volume} L</p>
+
+        {@const waterLevel = Math.min(waterIntakeTotalRes.total_volume / 2, 1)}
+        <div>
+            <WaterCup level={waterLevel} />
+        </div>
+    {/await}
+
+    <Button btnTxt="Record" on:click={openModal} />
     <Modal bind:isOpen={modalOpen}>
+        <div
+            slot="modal-background"
+            class="waterWaveContainer"
+            style="top: {levelPercent}%"
+        >
+            <svg
+                viewBox="0 0 500 100"
+                preserveAspectRatio="none"
+                class="waterWave"
+                height="100"
+            >
+                <path
+                    d="M0,40 C150,90 350,10 500,40 L500,100 L0,100 Z"
+                    style="stroke: none; fill: #74ccf4;"
+                >
+                    <animate
+                        attributeName="d"
+                        dur="1.5s"
+                        repeatCount="indefinite"
+                        keyTimes="0;0.5;1"
+                        values="
+                    M0,40 C150,90 350,10 500,40 L500,100 L0,100 Z;
+                    M0,40 C150,10 350,90 500,40 L500,100 L0,100 Z;
+                    M0,40 C150,90 350,10 500,40 L500,100 L0,100 Z
+                "
+                    >
+                    </animate>
+                </path>
+            </svg>
+
+            <div class="waterBody"></div>
+        </div>
         <div class="modal-wrapper">
-            <p>Let's drink 2L of water</p>
+            <p>Today's Water Intake</p>
+
             <div class="volume-buttons">
                 <CircleButton
-                    on:click={() => {
-                        volume = Math.max(0, volume - 0.25);
+                    on:click={async () => {
+                        newVolume = Math.max(0, newVolume - 0.25);
                     }}
                 >
                     <svg
@@ -39,10 +117,10 @@
                         />
                     </svg>
                 </CircleButton>
-                <p>{volume} L</p>
+                <p>{newVolume} L</p>
                 <CircleButton
                     on:click={() => {
-                        volume += 0.25;
+                        newVolume += 0.25;
                     }}
                 >
                     <svg
@@ -56,7 +134,7 @@
                     </svg>
                 </CircleButton>
             </div>
-            <Button btnTxt="Save" on:click={() => (modalOpen = false)} />
+            <Button btnTxt="Save" on:click={updateWaterIntake} />
         </div>
     </Modal>
 </div>
@@ -70,8 +148,14 @@
         height: 100%;
     }
 
-    .waterintake-wrapper > p {
+    .waterintake-wrapper > p:nth-child(1) {
         margin: 0 0 10px 0;
+        font-size: 30px;
+    }
+
+    .waterintake-wrapper > p:nth-child(2) {
+        margin: 0 0 10px 0;
+        font-size: 50px;
     }
 
     .volume-buttons {
@@ -100,5 +184,31 @@
 
     .modal-wrapper > p {
         margin: 0 0 20px 0;
+    }
+
+    .waterWaveContainer {
+        display: flex;
+        flex-direction: column;
+
+        position: absolute;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        transition: top 0.3s ease;
+        opacity: 0.5;
+
+        z-index: 1;
+        pointer-events: none;
+    }
+
+    .waterWave {
+        flex: 0 0 auto;
+    }
+
+    .waterBody {
+        flex: 1 1 auto;
+        width: 100%;
+        margin-top: -2px;
+        background: linear-gradient(180deg, #74ccf4, #00adf1);
     }
 </style>

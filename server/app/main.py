@@ -1,13 +1,26 @@
 from fastapi import Depends, FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from . import crud, models, schemas
 from .database import SessionLocal, engine
-import datetime
 
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
+origins = [
+    "http://localhost",
+    "http://localhost:8080",
+    "http://localhost:5173",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Dependency
 def get_db():
@@ -39,25 +52,30 @@ def update_user_settings(user: schemas.UserSettingsShareStatus, db: Session = De
     crud.update_user_share_status(db=db, user=user)
 
 
-@app.post("/user/{user_id}/water_intakes", response_model=schemas.WaterIntake)
+@app.put("/user/settings/photo")
+def update_user_photo(user: schemas.UserSettingsPhoto, db: Session = Depends(get_db)):
+    crud.update_user_photo(db=db, user=user)
+
+
+@app.post("/user/water_intakes", response_model=schemas.WaterIntake)
 def create_water_intake_for_user(
-    user_id: int, water_intake: schemas.WaterIntakeCreate, db: Session = Depends(get_db)
+    water_intake: schemas.WaterIntake, db: Session = Depends(get_db)
 ):
-    return crud.create_user_water_intake(db=db, water_intake=water_intake, user_id=user_id)
+    return crud.create_user_water_intake(db=db, water_intake=water_intake)
 
 
-@app.get("/user/{user_id}/water_intakes/{date}")
-def get_total_water_intake_by_user_id_and_date(user_id: int, date: datetime.date, db: Session = Depends(get_db)) -> float:
-    return crud.get_total_water_intakes_by_user_id_and_date(db, user_id=user_id, date=date)
+@app.post("/user/water_intakes_total", response_model=schemas.WaterIntakeTotalForDateResponse)
+def get_total_water_intake_by_user_id_and_date(request: schemas.WaterIntakeTotalForDateRequest, db: Session = Depends(get_db)):
+    return crud.get_total_water_intakes_by_user_id_and_date(db, request=request)
 
 
-@app.post("/user/{user_id}/food_intakes", response_model=schemas.FoodIntake)
+@app.post("/user/food_intakes", response_model=schemas.FoodIntake)
 def create_food_intake_for_user(
-    user_id: int, food_intake: schemas.FoodIntakeCreate, db: Session = Depends(get_db)
+    food_intake: schemas.FoodIntake, db: Session = Depends(get_db)
 ):
-    return crud.create_user_food_intake(db=db, food_intake=food_intake, user_id=user_id)
+    return crud.create_user_food_intake(db=db, food_intake=food_intake)
 
 
-@app.get("/user/{user_id}/food_intakes/{start_date}/{end_date}", response_model=list[schemas.FoodIntake])
-def read_food_intakes_by_user_id_and_date_range(user_id: int, start_date: datetime.date, end_date: datetime.date, db: Session = Depends(get_db)):
-    return crud.get_food_intakes_by_user_id_and_date_range(db, user_id=user_id, start_date=start_date, end_date=end_date)
+@app.post("/user/food_intakes_total", response_model=schemas.FoodIntakeForDateRangeResponse)
+def read_food_intakes_by_user_id_and_date_range(request: schemas.FoodIntakeForDateRangeRequest, db: Session = Depends(get_db)):
+    return crud.get_food_intakes_by_user_id_and_date_range(db, request=request)

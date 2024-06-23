@@ -1,45 +1,48 @@
 from pydantic import BaseModel, field_validator, EmailStr
 from pydantic_core.core_schema import FieldValidationInfo
-from datetime import date, time
-from typing import Optional
+from datetime import datetime
+from typing import Optional, List
 from fastapi import HTTPException
 
 
-class WaterIntakeBase(BaseModel):
+class WaterIntake(BaseModel):
     volume: float
-
-
-class WaterIntakeCreate(WaterIntakeBase):
-    date: date
-    time: time
-
-
-class WaterIntake(WaterIntakeBase):
-    id: int
+    created_at: datetime
     user_id: int
     
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
-class FoodIntakeBase(BaseModel):
+class WaterIntakeTotalForDateRequest(BaseModel):
+    user_id: int
+    date: datetime
+
+
+class WaterIntakeTotalForDateResponse(BaseModel):
+    total_volume: float
+
+
+class FoodIntake(BaseModel):
     food: str
     calorie: Optional[float] = None
     image: Optional[bytes] = None
-
-
-class FoodIntakeCreate(FoodIntakeBase):
-    date: date
-    time: time
-
-   
-class FoodIntake(FoodIntakeBase):
-    id: int
+    created_at: Optional[datetime] = None
     user_id: int
     
     class Config:
-        orm_mode = True
+        from_attributes = True
 
+   
+class FoodIntakeForDateRangeRequest(BaseModel):
+    user_id: int
+    start_date: datetime
+    end_date: datetime
+
+
+class FoodIntakeForDateRangeResponse(BaseModel):
+    foods: List[FoodIntake]
+    
        
 class UserBase(BaseModel):
     user_name: str
@@ -74,10 +77,12 @@ class UserId(BaseModel):
     id: int   
 
 class User(UserBase, UserId):
-    class Config:
-        orm_mode = True
-
+    pass
 
 class UserSettingsShareStatus(UserId):
     is_shared_water_intake: bool = False
     is_shared_food_intake: bool = False
+
+
+class UserSettingsPhoto(UserId):
+    photo: bytes
