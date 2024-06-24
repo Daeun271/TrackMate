@@ -1,10 +1,7 @@
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import func
 from . import models, schemas
-from passlib.context import CryptContext
-
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+import bcrypt
 
 def get_user(db: Session, user_id: int):
     return db.query(models.User).filter(models.User.id == user_id).first()
@@ -15,7 +12,8 @@ def get_user_by_email(db: Session, email: str):
 
 
 def create_user(db: Session, user: schemas.UserCreate):
-    hashed_password = pwd_context.hash(user.password)
+    password_salt = bcrypt.gensalt()
+    hashed_password = bcrypt.hashpw(user.password.encode('utf-8'), password_salt)
     db_user = models.User(user_name=user.user_name, email=user.email, hashed_password=hashed_password)
     db.add(db_user)
     db.commit()

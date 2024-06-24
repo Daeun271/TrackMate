@@ -9,7 +9,7 @@ class User(Base):
     id = Column(Integer, primary_key=True)
     user_name = Column(String, unique=True, nullable=False)
     email = Column(String, unique=True, nullable=False, index=True)
-    hashed_password = Column(String, nullable=False)
+    hashed_password = Column(LargeBinary, nullable=False)
     
     is_shared_water_intake = Column(Boolean, default=False)
     is_shared_food_intake = Column(Boolean, default=False)
