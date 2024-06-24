@@ -42,14 +42,18 @@ class FoodIntakeForDateRangeRequest(BaseModel):
 
 class FoodIntakeForDateRangeResponse(BaseModel):
     foods: List[FoodIntake]
+
+
+class Session(BaseModel):
+    key: str    
+
     
-       
-class UserBase(BaseModel):
+class User(BaseModel):
     user_name: str
     email: EmailStr
 
 
-class UserCreate(UserBase):
+class UserRegister(User):
     password: str
     
     @field_validator('user_name', 'email', 'password')
@@ -73,11 +77,14 @@ class UserCreate(UserBase):
         return v
 
 
-class UserId(BaseModel):
-    id: int   
+class UserLogIn(BaseModel):
+    email: EmailStr
+    password: str
 
-class User(UserBase, UserId):
-    pass
+
+class UserId(BaseModel):
+    id: int  
+
 
 class UserSettingsShareStatus(UserId):
     is_shared_water_intake: bool = False

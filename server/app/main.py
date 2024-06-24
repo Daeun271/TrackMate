@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from . import crud, models, schemas
 from .database import SessionLocal, engine
+import bcrypt
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -31,12 +32,26 @@ def get_db():
         db.close()
 
 
-@app.post("/user/create", response_model=schemas.User)
-def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
+@app.post("/user/register", response_model=schemas.Session)
+def register_user(user: schemas.UserRegister, db: Session = Depends(get_db)):
     db_user = crud.get_user_by_email(db, email=user.email)
     if db_user:
         raise HTTPException(status_code=400, detail="Email already registered")
     return crud.create_user(db=db, user=user)
+
+
+@app.post("/user/login", response_model=schemas.Session)
+def login_user(user: schemas.UserLogin, db: Session = Depends(get_db)):
+    db_user = crud.get_user_by_email(db, email=user.email)
+    
+    if db_user is None or not bcrypt.checkpw(user.password.encode('utf-8'), db_user.hashed_password):
+        raise HTTPException(status_code=401, detail="Invalid email and/or password")
+
+    session_key = bcrypt.gensalt().hex()
+    session = models.Session(key=session_key, user_id=db_user.id)
+    db.add(session)
+    db.commit()
+    return schemas.Session(key=session_key)
 
 
 @app.get("/user/{user_id}", response_model=schemas.User)

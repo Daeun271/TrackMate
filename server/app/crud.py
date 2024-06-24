@@ -11,14 +11,20 @@ def get_user_by_email(db: Session, email: str):
     return db.query(models.User).filter(models.User.email == email).first()
 
 
-def create_user(db: Session, user: schemas.UserCreate):
+def create_user(db: Session, user: schemas.UserRegister):
     password_salt = bcrypt.gensalt()
     hashed_password = bcrypt.hashpw(user.password.encode('utf-8'), password_salt)
     db_user = models.User(user_name=user.user_name, email=user.email, hashed_password=hashed_password)
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
-    return db_user
+    
+    session_key = bcrypt.gensalt().hex()
+    session = models.Session(key=session_key, user_id=db_user.id)
+    db.add(session)
+    db.commit()
+    
+    return schemas.Session(key=session_key)
 
 
 def update_user_share_status(db: Session, user: schemas.UserSettingsShareStatus):

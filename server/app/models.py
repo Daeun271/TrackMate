@@ -18,6 +18,15 @@ class User(Base):
 
     water_intakes = relationship("WaterIntake", back_populates="user")
     food_intakes = relationship("FoodIntake", back_populates="user")
+    
+
+class Session(Base):
+    __tablename__ = "sessions"
+    
+    key = Column(String, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    
+    user = relationship("User", back_populates="sessions")
 
 
 class WaterIntake(Base):
