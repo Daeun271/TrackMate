@@ -8,14 +8,12 @@ from fastapi import HTTPException
 class WaterIntake(BaseModel):
     volume: float
     created_at: datetime
-    user_id: int
     
     class Config:
         from_attributes = True
 
 
 class WaterIntakeTotalForDateRequest(BaseModel):
-    user_id: int
     date: datetime
 
 
@@ -28,14 +26,12 @@ class FoodIntake(BaseModel):
     calorie: Optional[float] = None
     image: Optional[bytes] = None
     created_at: Optional[datetime] = None
-    user_id: int
     
     class Config:
         from_attributes = True
 
    
 class FoodIntakeForDateRangeRequest(BaseModel):
-    user_id: int
     start_date: datetime
     end_date: datetime
 
@@ -77,19 +73,15 @@ class UserRegister(User):
         return v
 
 
-class UserLogIn(BaseModel):
+class UserLogin(BaseModel):
     email: EmailStr
     password: str
 
 
-class UserId(BaseModel):
-    id: int  
-
-
-class UserSettingsShareStatus(UserId):
+class UserSettingsShareStatus(BaseModel):
     is_shared_water_intake: bool = False
     is_shared_food_intake: bool = False
 
 
-class UserSettingsPhoto(UserId):
+class UserSettingsPhoto(BaseModel):
     photo: bytes

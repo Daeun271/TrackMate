@@ -26,7 +26,7 @@ class Session(Base):
     key = Column(String, primary_key=True)
     user_id = Column(Integer, ForeignKey("users.id"))
     
-    user = relationship("User", back_populates="sessions")
+    user = relationship("User")
 
 
 class WaterIntake(Base):
