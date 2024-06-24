@@ -6,13 +6,13 @@
     import LogInUp from './components/auth/LogInUp.svelte';
 
     import { currentTab } from './tabs.js';
-    import { isLoggedIn } from './user.js';
+    import { user } from './user.js';
 
     let isMobile = window.matchMedia('(max-width: 480px)').matches;
 </script>
 
 <div class="app">
-    {#if isLoggedIn()}
+    {#if $user}
         {#if !isMobile}
             <DesktopHeader />
         {/if}

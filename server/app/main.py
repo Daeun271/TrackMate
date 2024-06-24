@@ -12,7 +12,6 @@ models.Base.metadata.create_all(bind=engine)
 app = FastAPI()
 
 origins = [
-    "http://localhost",
     "http://localhost:8080",
     "http://localhost:5173",
 ]
@@ -43,6 +42,9 @@ def get_request_auth_user_id(request: Request) -> Optional[int]:
 
 @app.middleware("http")
 async def auth_middleware(request: Request, call_next):
+    if request.method == "OPTIONS":
+        return await call_next(request)
+
     whitelist = ["/user/register", "/user/login", "/docs", "/openapi.json"]
     
     if request.url.path in whitelist:

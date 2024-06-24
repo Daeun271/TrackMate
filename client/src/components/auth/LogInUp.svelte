@@ -1,8 +1,38 @@
 <script>
+    import { signUp } from '../../user.js';
+    import { logIn } from '../../user.js';
+
     let isLogin = true;
     let name = '';
     let email = '';
     let password = '';
+    let loginErrorMsg = '';
+    let signupErrorMsg = '';
+
+    async function validateAndLogIn(email, password) {
+        try {
+            await logIn(email, password);
+        } catch (error) {
+            loginErrorMsg = error.message;
+            return;
+        }
+
+        email = '';
+        password = '';
+    }
+
+    async function validateAndSignUp(name, email, password) {
+        try {
+            await signUp(name, email, password);
+        } catch (error) {
+            signupErrorMsg = error.message;
+            return;
+        }
+
+        name = '';
+        email = '';
+        password = '';
+    }
 </script>
 
 <div class="wrapper">
@@ -18,8 +48,10 @@
                 name="password"
                 bind:value={password}
             />
-            <button type="submit">Log In</button>
-            <p class="error-message"></p>
+            <button on:click={() => validateAndLogIn(email, password)}
+                >Log In</button
+            >
+            <p class="error-message">{loginErrorMsg}</p>
         </div>
         <div class="container-outside">
             <p>Don't have an account?</p>
@@ -43,8 +75,10 @@
                 name="password"
                 bind:value={password}
             />
-            <button type="submit">Sign Up</button>
-            <p class="error-message"></p>
+            <button on:click={() => validateAndSignUp(name, email, password)}
+                >Sign Up</button
+            >
+            <p class="error-message">{signupErrorMsg}</p>
         </div>
         <div class="container-outside">
             <p>Already have an account?</p>

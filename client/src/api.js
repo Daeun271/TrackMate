@@ -23,6 +23,9 @@ export async function request(
     }
     let response = await fetch(url, options);
     let data = await response.json();
+    if (!response.ok) {
+        throw new Error(data.detail);
+    }
     return data;
 }
 
@@ -30,7 +33,7 @@ export async function user() {
     return request('GET', 'user');
 }
 
-export async function userCreate(userName, email, password) {
+export async function userSignup(userName, email, password) {
     const sessionKey = await request('POST', 'user/register', {
         user_name: userName,
         email,
