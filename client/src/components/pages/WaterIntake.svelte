@@ -3,7 +3,7 @@
     import CircleButton from '../water_intakes/CircleButton.svelte';
     import Modal from '../Modal.svelte';
     import Button from '../water_intakes/Button.svelte';
-    import * as waterIntake from '../../user.js';
+    import { getWaterIntakesTotal, addWaterIntake } from '../../api.js';
 
     let newVolume = 0;
 
@@ -11,8 +11,7 @@
 
     let waterIntakePromise = getWaterIntake();
     async function getWaterIntake() {
-        const waterIntakeTotalRes = await waterIntake.getWaterIntakesTotal(
-            2,
+        const waterIntakeTotalRes = await getWaterIntakesTotal(
             new Date().toISOString(),
         );
 
@@ -20,11 +19,7 @@
     }
 
     async function updateWaterIntake() {
-        await waterIntake.addWaterIntake(
-            newVolume,
-            new Date().toISOString(),
-            2,
-        );
+        await addWaterIntake(newVolume, new Date().toISOString());
         modalOpen = false;
         waterIntakePromise = getWaterIntake();
     }

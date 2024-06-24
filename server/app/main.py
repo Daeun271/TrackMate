@@ -87,7 +87,7 @@ def login_user(user: schemas.UserLogin, db: Session = Depends(get_db)):
     return schemas.Session(key=session_key)
 
 
-@app.get("/user/settings/", response_model=schemas.User)
+@app.get("/user", response_model=schemas.User)
 def read_user(request: Request, db: Session = Depends(get_db)):
     db_user = crud.get_user(db, user_id=request.state.user_id)
     if db_user is None:

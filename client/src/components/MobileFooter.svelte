@@ -43,7 +43,6 @@
         background-color: transparent;
         border: none;
         cursor: pointer;
-        -webkit-tap-highlight-color: transparent;
         border-radius: 8px;
         height: 50px;
 

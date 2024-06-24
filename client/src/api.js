@@ -12,6 +12,7 @@ export async function request(
     }
     let headers = {
         'Content-Type': 'application/json',
+        Authorization: localStorage.getItem('sessionKey'),
     };
     let options = {
         method: method,
@@ -25,29 +26,38 @@ export async function request(
     return data;
 }
 
-export async function user(userId) {
-    return request('GET', 'user/' + userId);
+export async function user() {
+    return request('GET', 'user');
 }
 
 export async function userCreate(userName, email, password) {
-    return request('POST', 'user/create', {
+    const sessionKey = await request('POST', 'user/register', {
         user_name: userName,
         email,
         password,
     });
+
+    localStorage.setItem('sessionKey', sessionKey.key);
 }
 
-export async function waterIntakeCreate(volume, createdAt, userId) {
-    return request('POST', 'user/water_intakes', {
+export async function userLogin(email, password) {
+    const sessionKey = await request('POST', 'user/login', {
+        email,
+        password,
+    });
+
+    localStorage.setItem('sessionKey', sessionKey.key);
+}
+
+export async function addWaterIntake(volume, createdAt) {
+    request('POST', 'user/water_intakes', {
         volume,
         created_at: createdAt,
-        user_id: userId,
     });
 }
 
-export async function waterIntakeTotal(userId, date) {
+export async function getWaterIntakesTotal(date) {
     return request('POST', 'user/water_intakes_total', {
-        user_id: userId,
         date,
     });
 }

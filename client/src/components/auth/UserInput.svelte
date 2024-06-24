@@ -1,0 +1,100 @@
+<script>
+    import { createEventDispatcher } from 'svelte';
+
+    const dispatch = createEventDispatcher();
+
+    function onClick() {
+        dispatch('click');
+    }
+</script>
+
+<h1>Log In</h1>
+<div class="container">
+    <label for="email">Email</label>
+    <input type="email" id="email" name="email" />
+    <label for="password">Password</label>
+    <input type="password" id="password" name="password" />
+    <button type="submit">Log In</button>
+    <p class="error-message"></p>
+</div>
+<div class="container-outside">
+    <p>Don't have an account?</p>
+    <button on:click={onClick}>Sign Up</button>
+</div>
+
+<style>
+    h1 {
+        margin: 0;
+    }
+
+    .container {
+        display: flex;
+        flex-direction: column;
+        padding: 20px;
+        background-color: white;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        width: min(calc(100dvw - 40px), 400px);
+    }
+
+    label {
+        font-size: 20px;
+        margin: 10px 0 5px 0;
+    }
+
+    input {
+        padding: 10px;
+        margin-bottom: 10px;
+        border: 1px solid #ced4da;
+        border-radius: 5px;
+        outline: solid 2px #f8f8f8;
+        width: 100%;
+        height: 40px;
+        font-size: 18px;
+    }
+
+    .container > button {
+        margin-top: 10px;
+        padding: 10px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        cursor: pointer;
+    }
+
+    .container > button:hover {
+        background-color: #0056b3;
+    }
+
+    .container > button:active {
+        background-color: #004286;
+    }
+
+    .error-message {
+        color: #f50707;
+        font-size: 15px;
+        margin: 5px 0 0 0;
+    }
+
+    .container-outside {
+        display: flex;
+        flex-direction: row;
+        column-gap: 10px;
+    }
+
+    .container-outside > p {
+        margin: 0;
+        font-size: 18px;
+    }
+
+    .container-outside > button {
+        background-color: transparent;
+        border: none;
+        padding: 0;
+        font-size: 18px;
+        color: #007bff;
+        cursor: pointer;
+    }
+</style>

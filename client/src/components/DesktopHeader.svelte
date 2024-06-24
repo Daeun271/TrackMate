@@ -35,7 +35,6 @@
         background-color: transparent;
         border: none;
         cursor: pointer;
-        -webkit-tap-highlight-color: transparent;
         height: 50px;
 
         grid-row: 1;

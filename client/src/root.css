@@ -13,3 +13,7 @@ body {
 
     touch-action: pan-y;
 }
+
+button {
+    -webkit-tap-highlight-color: transparent;
+}
