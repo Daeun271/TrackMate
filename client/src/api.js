@@ -1,4 +1,4 @@
-import { EventEmitter } from './EventEmitter.js';
+import { EventEmitter } from './event-emitter.js';
 export const unauthorizedEvent = new EventEmitter();
 
 let hostUrl = 'http://192.168.10.29:8000/';
