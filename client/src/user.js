@@ -1,6 +1,11 @@
 import { writable, get } from 'svelte/store';
 import * as api from './api.js';
 
+api.unauthorizedEvent.subscribe(() => {
+    localStorage.removeItem('sessionKey');
+    user.set(null);
+});
+
 export const user = writable(JSON.parse(localStorage.getItem('user')) ?? null);
 
 user.subscribe((value) => {
@@ -12,7 +17,9 @@ export async function signUp(userName, email, password) {
     validateEmail(email);
     validatePassword(password);
 
-    await api.userSignup(userName, email, password);
+    const session = await api.userSignup(userName, email, password);
+    localStorage.setItem('sessionKey', session.key);
+
     const data = await api.user();
     user.set(data);
 }
@@ -21,9 +28,23 @@ export async function logIn(email, password) {
     validateFields([email, password]);
     validateEmail(email);
 
-    await api.userLogin(email, password);
+    const session = await api.userLogin(email, password);
+    localStorage.setItem('sessionKey', session.key);
+
     const data = await api.user();
     user.set(data);
+}
+
+export async function logoutFromCurrentDevice() {
+    await api.userLogoutFromCurrentDevice();
+    localStorage.removeItem('sessionKey');
+    user.set(null);
+}
+
+export async function logoutFromAllDevices() {
+    await api.userLogoutFromAllDevices();
+    localStorage.removeItem('sessionKey');
+    user.set(null);
 }
 
 function validateFields(fields) {

@@ -10,8 +10,15 @@
     let loginErrorMsg = '';
     let signupErrorMsg = '';
     let isLoading = false;
+    let isClicked = false;
+    let lastTimeout = null;
 
     async function validateAndLogIn(email, password) {
+        if (lastTimeout) {
+            clearTimeout(lastTimeout);
+        }
+        isClicked = true;
+
         if (isLoading) return;
         isLoading = true;
 
@@ -22,11 +29,21 @@
         }
 
         isLoading = false;
+
+        lastTimeout = setTimeout(() => {
+            isClicked = false;
+        }, 150);
+
         email = '';
         password = '';
     }
 
     async function validateAndSignUp(name, email, password) {
+        if (lastTimeout) {
+            clearTimeout(lastTimeout);
+        }
+        isClicked = true;
+
         if (isLoading) return;
         isLoading = true;
 
@@ -37,13 +54,18 @@
         }
 
         isLoading = false;
+
+        lastTimeout = setTimeout(() => {
+            isClicked = false;
+        }, 150);
+
         name = '';
         email = '';
         password = '';
     }
 </script>
 
-<div class="wrapper">
+<div class="background">
     {#if isLogin}
         <h1>Log In</h1>
         <div class="container">
@@ -59,6 +81,7 @@
             <button
                 on:click={() => validateAndLogIn(email, password)}
                 style="pointer-events: {isLoading ? 'none' : 'auto'};"
+                class:button-clicked={isClicked}
             >
                 {#if isLoading}
                     <Loader></Loader>
@@ -94,6 +117,7 @@
             <button
                 on:click={() => validateAndSignUp(name, email, password)}
                 style="pointer-events: {isLoading ? 'none' : 'auto'};"
+                class:button-clicked={isClicked}
             >
                 {#if isLoading}
                     <Loader></Loader>
@@ -115,7 +139,7 @@
 </div>
 
 <style>
-    .wrapper {
+    .background {
         display: flex;
         justify-content: center;
         align-items: center;
@@ -156,6 +180,7 @@
     }
 
     .container > button {
+        appearance: none;
         margin-top: 10px;
         padding: 10px;
         background-color: #007bff;
@@ -167,12 +192,9 @@
         cursor: pointer;
     }
 
-    .container > button:hover {
-        background-color: #0056b3;
-    }
-
-    .container > button:active {
-        background-color: #004286;
+    .container > button.button-clicked {
+        background-color: #0042a2;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
 
     .error-message {
@@ -193,6 +215,7 @@
     }
 
     .container-outside > button {
+        appearance: none;
         background-color: transparent;
         border: none;
         padding: 0;

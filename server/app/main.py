@@ -14,15 +14,9 @@ app = FastAPI()
 origins = [
     "http://localhost:8080",
     "http://localhost:5173",
+    "http://192.168.10.29:8000",
+    "http://192.168.10.29:5173",
 ]
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 
 def get_request_auth_user_id(request: Request) -> Optional[int]:
@@ -58,6 +52,15 @@ async def auth_middleware(request: Request, call_next):
     return await call_next(request)
 
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
 # Dependency
 def get_db():
     db = SessionLocal()
@@ -87,6 +90,16 @@ def login_user(user: schemas.UserLogin, db: Session = Depends(get_db)):
     db.add(session)
     db.commit()
     return schemas.Session(key=session_key)
+
+
+@app.get("/user/logout_current_device")
+def logout_user_from_current_device(request: Request, db: Session = Depends(get_db)):
+    crud.logout_user_from_current_device(db, session_key=request.headers.get('Authorization'))
+    
+
+@app.get("/user/logout_all_devices")
+def logout_user_from_all_devices(request: Request, db: Session = Depends(get_db)):
+    crud.logout_user_from_all_devices(db, user_id=request.state.user_id)
 
 
 @app.get("/user", response_model=schemas.User)

@@ -1,4 +1,7 @@
-let hostUrl = 'http://127.0.0.1:8000/';
+import { EventEmitter } from './EventEmitter.js';
+export const unauthorizedEvent = new EventEmitter();
+
+let hostUrl = 'http://192.168.10.29:8000/';
 
 export async function request(
     method = 'GET',
@@ -7,21 +10,30 @@ export async function request(
     queryParameters = null,
 ) {
     let url = hostUrl + endpoint;
+
     if (queryParameters) {
         url += '?' + new URLSearchParams(queryParameters);
     }
+
     let headers = {
         'Content-Type': 'application/json',
         Authorization: localStorage.getItem('sessionKey'),
     };
+
     let options = {
         method: method,
         headers: headers,
     };
+
     if (body) {
         options.body = JSON.stringify(body);
     }
+
     let response = await fetch(url, options);
+    if (response.status === 401) {
+        unauthorizedEvent.emit();
+    }
+
     let data = await response.json();
     if (!response.ok) {
         throw new Error(data.detail);
@@ -34,22 +46,26 @@ export async function user() {
 }
 
 export async function userSignup(userName, email, password) {
-    const sessionKey = await request('POST', 'user/register', {
+    return await request('POST', 'user/register', {
         user_name: userName,
         email,
         password,
     });
-
-    localStorage.setItem('sessionKey', sessionKey.key);
 }
 
 export async function userLogin(email, password) {
-    const sessionKey = await request('POST', 'user/login', {
+    return await request('POST', 'user/login', {
         email,
         password,
     });
+}
 
-    localStorage.setItem('sessionKey', sessionKey.key);
+export async function userLogoutFromCurrentDevice() {
+    request('GET', 'user/logout_current_device');
+}
+
+export async function userLogoutFromAllDevices() {
+    request('GET', 'user/logout_all_devices');
 }
 
 export async function addWaterIntake(volume, createdAt) {

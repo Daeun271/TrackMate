@@ -26,6 +26,8 @@
 
 <style>
     button {
+        appearance: none;
+
         background-color: #007bff;
         color: white;
 

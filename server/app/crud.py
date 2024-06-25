@@ -27,6 +27,16 @@ def create_user(db: Session, user: schemas.UserRegister):
     return schemas.Session(key=session_key)
 
 
+def logout_user_from_current_device(db: Session, session_key: str):
+    db.query(models.Session).filter(models.Session.key == session_key).delete()
+    db.commit()
+
+
+def logout_user_from_all_devices(db: Session, user_id: int):
+    db.query(models.Session).filter(models.Session.user_id == user_id).delete()
+    db.commit()
+
+
 def update_user_share_status(db: Session, user: schemas.UserSettingsShareStatus, user_id: int):
     db_user = db.query(models.User).filter(models.User.id == user_id).first()
     if db_user is None:
