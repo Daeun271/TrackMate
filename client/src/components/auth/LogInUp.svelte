@@ -1,6 +1,7 @@
 <script>
     import { signUp } from '../../user.js';
     import { logIn } from '../../user.js';
+    import Loader from './Loader.svelte';
 
     let isLogin = true;
     let name = '';
@@ -8,27 +9,34 @@
     let password = '';
     let loginErrorMsg = '';
     let signupErrorMsg = '';
+    let isLoading = false;
 
     async function validateAndLogIn(email, password) {
+        if (isLoading) return;
+        isLoading = true;
+
         try {
             await logIn(email, password);
         } catch (error) {
             loginErrorMsg = error.message;
-            return;
         }
 
+        isLoading = false;
         email = '';
         password = '';
     }
 
     async function validateAndSignUp(name, email, password) {
+        if (isLoading) return;
+        isLoading = true;
+
         try {
             await signUp(name, email, password);
         } catch (error) {
             signupErrorMsg = error.message;
-            return;
         }
 
+        isLoading = false;
         name = '';
         email = '';
         password = '';
@@ -48,9 +56,17 @@
                 name="password"
                 bind:value={password}
             />
-            <button on:click={() => validateAndLogIn(email, password)}
-                >Log In</button
+            <button
+                on:click={() => validateAndLogIn(email, password)}
+                style="pointer-events: {isLoading ? 'none' : 'auto'};"
             >
+                {#if isLoading}
+                    <Loader></Loader>
+                {:else}
+                    Log In
+                {/if}
+            </button>
+
             <p class="error-message">{loginErrorMsg}</p>
         </div>
         <div class="container-outside">
@@ -75,9 +91,16 @@
                 name="password"
                 bind:value={password}
             />
-            <button on:click={() => validateAndSignUp(name, email, password)}
-                >Sign Up</button
+            <button
+                on:click={() => validateAndSignUp(name, email, password)}
+                style="pointer-events: {isLoading ? 'none' : 'auto'};"
             >
+                {#if isLoading}
+                    <Loader></Loader>
+                {:else}
+                    Sign Up
+                {/if}
+            </button>
             <p class="error-message">{signupErrorMsg}</p>
         </div>
         <div class="container-outside">
@@ -140,6 +163,7 @@
         border: none;
         border-radius: 5px;
         font-size: 16px;
+        height: 40px;
         cursor: pointer;
     }
 
