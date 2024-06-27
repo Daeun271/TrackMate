@@ -61,22 +61,60 @@ export async function userLogin(email, password) {
 }
 
 export async function userLogoutFromCurrentDevice() {
-    request('GET', 'user/logout_current_device');
+    await request('GET', 'user/logout_current_device');
 }
 
 export async function userLogoutFromAllDevices() {
-    request('GET', 'user/logout_all_devices');
+    await request('GET', 'user/logout_all_devices');
 }
 
 export async function addWaterIntake(volume, createdAt) {
-    request('POST', 'user/water_intakes', {
+    await request('POST', 'user/water_intakes/create', {
         volume,
         created_at: createdAt,
     });
 }
 
 export async function getWaterIntakesTotal(date) {
-    return request('POST', 'user/water_intakes_total', {
+    return await request('POST', 'user/water_intakes/get_total_volume', {
         date,
+    });
+}
+
+export async function addFoodIntake(name, calories, consumedAt, timeCategory) {
+    return await request('POST', 'user/food_intakes/create', {
+        name,
+        calories,
+        consumed_at: consumedAt,
+        time_category: timeCategory,
+    });
+}
+
+export async function getFoodIntakesTotal(startDate, endDate) {
+    return await request('POST', 'user/food_intakes/get_food_intakes', {
+        start_date: startDate,
+        end_date: endDate,
+    });
+}
+
+export async function updateFoodIntake(
+    uid,
+    name,
+    calories,
+    consumedAt,
+    timeCategory,
+) {
+    return await request('POST', 'user/food_intakes/update', {
+        uid,
+        name,
+        calories,
+        consumed_at: consumedAt,
+        time_category: timeCategory,
+    });
+}
+
+export async function deleteFoodIntake(uid) {
+    await request('Delete', 'user/food_intakes/delete', {
+        uid,
     });
 }

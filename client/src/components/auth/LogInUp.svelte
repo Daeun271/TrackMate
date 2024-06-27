@@ -166,6 +166,7 @@
     label {
         font-size: 20px;
         margin: 10px 0 5px 0;
+        pointer-events: none;
     }
 
     input {

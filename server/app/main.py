@@ -120,25 +120,42 @@ def update_user_photo(user: schemas.UserSettingsPhoto, request: Request, db: Ses
     crud.update_user_photo(db=db, user=user, user_id=request.state.user_id)
 
 
-@app.post("/user/water_intakes", response_model=schemas.WaterIntake)
-def create_water_intake_for_user(
+@app.post("/user/water_intakes/create")
+def create_water_intake(
     water_intake: schemas.WaterIntake, request: Request, db: Session = Depends(get_db)
 ):
-    return crud.create_user_water_intake(db=db, water_intake=water_intake, user_id=request.state.user_id)
+    crud.create_water_intake(db=db, water_intake=water_intake, user_id=request.state.user_id)
 
 
-@app.post("/user/water_intakes_total", response_model=schemas.WaterIntakeTotalForDateResponse)
+@app.post("/user/water_intakes/get_total_volume", response_model=schemas.WaterIntakeTotalForDateResponse)
 def get_total_water_intake_by_user_id_and_date(water_intake_total_request: schemas.WaterIntakeTotalForDateRequest, request: Request, db: Session = Depends(get_db)):
     return crud.get_total_water_intakes_by_user_id_and_date(db, water_intake_total_request=water_intake_total_request, user_id=request.state.user_id)
 
 
-@app.post("/user/food_intakes", response_model=schemas.FoodIntake)
-def create_food_intake_for_user(
-    food_intake: schemas.FoodIntake, request: Request, db: Session = Depends(get_db)
+@app.post("/user/food_intakes/create", response_model=schemas.FoodIntakeCreateResponse)
+def create_food_intake(
+    food_intake: schemas.FoodIntakeCreateRequest, request: Request, db: Session = Depends(get_db)
 ):
-    return crud.create_user_food_intake(db=db, food_intake=food_intake, user_id=request.state.user_id)
+    return crud.create_food_intake(db=db, food_intake=food_intake, user_id=request.state.user_id)
 
 
-@app.post("/user/food_intakes_total", response_model=schemas.FoodIntakeForDateRangeResponse)
-def read_food_intakes_by_user_id_and_date_range(food_intakes_request: schemas.FoodIntakeForDateRangeRequest, request: Request, db: Session = Depends(get_db)):
+@app.post("/user/food_intakes/get_food_intakes", response_model=schemas.FoodIntakeForDateRangeResponse)
+def get_food_intakes_by_user_id_and_date_range(food_intakes_request: schemas.FoodIntakeForDateRangeRequest, request: Request, db: Session = Depends(get_db)):
     return crud.get_food_intakes_by_user_id_and_date_range(db, food_intakes_request=food_intakes_request, user_id=request.state.user_id)
+
+
+@app.post("/user/food_intakes/update", response_model=schemas.FoodIntakeUpdateResponse)
+def update_food_intake(
+    food_intake: schemas.FoodIntakeUpdateRequest, request: Request, db: Session = Depends(get_db)
+):
+    uid = crud.update_food_intake(db=db, food_intake=food_intake, user_id=request.state.user_id)
+    if uid is None:
+        raise HTTPException(status_code=404, detail="Food intake not found")
+    return schemas.FoodIntakeUpdateResponse(uid=uid)
+
+
+@app.delete("/user/food_intakes/delete")
+def delete_food_intake(
+    food_intake: schemas.FoodIntakeDeleteRequest, request: Request, db: Session = Depends(get_db)
+):
+    crud.delete_food_intake(db=db, food_intake=food_intake, user_id=request.state.user_id)

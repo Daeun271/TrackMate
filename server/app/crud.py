@@ -63,22 +63,39 @@ def get_total_water_intakes_by_user_id_and_date(db: Session, water_intake_total_
     return schemas.WaterIntakeTotalForDateResponse(total_volume=total_volume)
 
 
-def create_user_water_intake(db: Session, water_intake: schemas.WaterIntake, user_id: int):
+def create_water_intake(db: Session, water_intake: schemas.WaterIntake, user_id: int):
     db_water_intake = models.WaterIntake(**water_intake.model_dump(), user_id=user_id)
     db.add(db_water_intake)
     db.commit()
     db.refresh(db_water_intake)
-    return db_water_intake
 
 
 def get_food_intakes_by_user_id_and_date_range(db: Session, food_intakes_request: schemas.FoodIntakeForDateRangeRequest, user_id: int):
     return schemas.FoodIntakeForDateRangeResponse(
-        foods=db.query(models.FoodIntake).filter(models.FoodIntake.user_id == user_id, func.Date(models.FoodIntake.created_at) >= func.Date(food_intakes_request.start_date), func.Date(models.FoodIntake.created_at) < func.Date(food_intakes_request.end_date)).all()
+        foods=db.query(models.FoodIntake).filter(models.FoodIntake.user_id == user_id, func.Date(models.FoodIntake.consumed_at) >= func.Date(food_intakes_request.start_date), func.Date(models.FoodIntake.consumed_at) < func.Date(food_intakes_request.end_date)).all()
     )
 
-def create_user_food_intake(db: Session, food_intake: schemas.FoodIntake, user_id: int):
+
+def create_food_intake(db: Session, food_intake: schemas.FoodIntakeCreateRequest, user_id: int):
     db_food_intake = models.FoodIntake(**food_intake.model_dump(), user_id=user_id)
     db.add(db_food_intake)
     db.commit()
     db.refresh(db_food_intake)
-    return db_food_intake
+    return schemas.FoodIntakeCreateResponse(uid=db_food_intake.uid)
+
+
+def update_food_intake(db: Session, food_intake: schemas.FoodIntakeUpdateRequest, user_id: int):
+    db_food_intake = db.query(models.FoodIntake).filter(models.FoodIntake.user_id == user_id, models.FoodIntake.uid == food_intake.uid).first()
+    if db_food_intake is None:
+        return None
+    db_food_intake.name = food_intake.name
+    db_food_intake.calories = food_intake.calories
+    db_food_intake.consumed_at = food_intake.consumed_at
+    db_food_intake.time_category = food_intake.time_category
+    db.commit()
+    return schemas.FoodIntakeUpdateResponse(uid=db_food_intake.uid)
+
+
+def delete_food_intake(db: Session, food_intake: schemas.FoodIntakeDeleteRequest, user_id: int):
+    db.query(models.FoodIntake).filter(models.FoodIntake.user_id == user_id, models.FoodIntake.uid == food_intake.uid).delete()
+    db.commit()

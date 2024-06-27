@@ -3,6 +3,7 @@ from pydantic_core.core_schema import FieldValidationInfo
 from datetime import datetime
 from typing import Optional, List
 from fastapi import HTTPException
+from .models import TimeCategory
 
 
 class WaterIntake(BaseModel):
@@ -21,23 +22,47 @@ class WaterIntakeTotalForDateResponse(BaseModel):
     total_volume: float
 
 
-class FoodIntake(BaseModel):
-    food: str
-    calorie: Optional[float] = None
-    image: Optional[bytes] = None
-    created_at: Optional[datetime] = None
+class FoodIntakeUid(BaseModel):
+    uid: str
+
+
+class FoodIntakeCreateRequest(BaseModel):
+    name: str
+    calories: Optional[float] = None
+    consumed_at: datetime
+    time_category: Optional[TimeCategory] = None
     
     class Config:
         from_attributes = True
 
-   
+
+class FoodIntakeCreateResponse(FoodIntakeUid):
+    pass
+
+
+class FoodIntakeBase(FoodIntakeCreateRequest, FoodIntakeUid):
+    pass
+
+
 class FoodIntakeForDateRangeRequest(BaseModel):
     start_date: datetime
     end_date: datetime
 
 
 class FoodIntakeForDateRangeResponse(BaseModel):
-    foods: List[FoodIntake]
+    foods: List[FoodIntakeBase]
+
+
+class FoodIntakeUpdateRequest(FoodIntakeBase):
+    pass
+
+
+class FoodIntakeUpdateResponse(FoodIntakeUid):
+    pass
+
+
+class FoodIntakeDeleteRequest(FoodIntakeUid):
+    pass
 
 
 class Session(BaseModel):

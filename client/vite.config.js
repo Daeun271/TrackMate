@@ -3,5 +3,15 @@ import { svelte } from '@sveltejs/vite-plugin-svelte';
 
 // https://vitejs.dev/config/
 export default defineConfig({
-    plugins: [svelte()],
+    plugins: [
+        svelte({
+            onwarn: (warning, handler) => {
+                /* TODO fix ally warnings */
+                if (warning.code.startsWith('ally-')) {
+                    return;
+                }
+                handler(warning);
+            },
+        }),
+    ],
 });

@@ -4,6 +4,7 @@
     import WaterIntake from './components/pages/WaterIntake.svelte';
     import Settings from './components/pages/Settings.svelte';
     import LogInUp from './components/auth/LogInUp.svelte';
+    import FoodIntake from './components/pages/FoodIntake.svelte';
 
     import { currentTab } from './tabs.js';
     import { user } from './user.js';
@@ -22,7 +23,7 @@
             {:else if $currentTab === 'exercise'}
                 Exercise
             {:else if $currentTab === 'food_intake'}
-                Food Intake
+                <FoodIntake />
             {:else if $currentTab === 'water_intake'}
                 <WaterIntake />
             {:else if $currentTab === 'community'}
