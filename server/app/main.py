@@ -1,11 +1,12 @@
-from fastapi import Depends, FastAPI, HTTPException, Request
-from fastapi.responses import JSONResponse
+from fastapi import Depends, FastAPI, HTTPException, Request, File, UploadFile
+from fastapi.responses import JSONResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from . import crud, models, schemas
 from .database import SessionLocal, engine
 import bcrypt
 from typing import Optional
+import os
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -159,3 +160,40 @@ def delete_food_intake(
     food_intake: schemas.FoodIntakeDeleteRequest, request: Request, db: Session = Depends(get_db)
 ):
     crud.delete_food_intake(db=db, food_intake=food_intake, user_id=request.state.user_id)
+
+
+def image_path_for_uid(uid: str) -> str:
+    image_base_path = os.environ.get("IMAGE_BASE_PATH")
+    if image_base_path is None:
+        image_base_path = os.path.join("data", "food_intake_images")
+    return os.path.join(image_base_path, f"{uid}.jpeg")
+
+
+@app.post("/user/food_intakes/images/{uid}")
+def upload_food_image(
+    uid: str, request: Request, file: UploadFile = File(...), db: Session = Depends(get_db)
+):
+    if db.query(models.FoodIntake).filter(models.FoodIntake.uid == uid and models.FoodIntake.user_id == request.state.user_id).first() is None:
+        raise HTTPException(status_code=404, detail="Food intake not found")
+    
+    image = file.file.read()
+    
+    if len(image) > 5 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="Image size too large")
+    
+    if not image.startswith(b"\xff\xd8\xff"):
+        raise HTTPException(status_code=400, detail="Invalid image format")
+    
+    image_path = image_path_for_uid(uid)
+    
+    with open(image_path, "wb") as image_file:
+        image_file.write(image)
+
+
+@app.get("/user/food_intakes/images/{uid}")
+def get_food_image(uid: str, request: Request):
+    image_path = image_path_for_uid(uid)
+    if not os.path.exists(image_path):
+        raise HTTPException(status_code=404, detail="Image not found")
+    
+    return FileResponse(image_path, media_type="image/jpeg")
