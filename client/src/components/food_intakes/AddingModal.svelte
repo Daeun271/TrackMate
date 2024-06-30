@@ -1,5 +1,7 @@
 <script>
+    import { addFoodIntake, uploadFoodImage } from '../../api';
     import Modal from '../Modal.svelte';
+    import Loader from '../auth/Loader.svelte';
 
     export let isAddingModalOpen = false;
     const today = new Date().toISOString().split('T')[0];
@@ -7,6 +9,7 @@
     function getInitialInputs() {
         return {
             imageUrl: '',
+            imageBlob: null,
             name: '',
             calories: '',
             date: today,
@@ -18,10 +21,56 @@
 
     let imageInput;
 
-    function uploadImage(event) {
+    async function onImageFileChanged(event) {
         const file = event.target.files[0];
 
-        userInputs.imageUrl = window.URL.createObjectURL(file);
+        if (!file) {
+            return;
+        }
+
+        const image = new Image();
+        image.src = URL.createObjectURL(file);
+        await new Promise((resolve) => {
+            image.onload = () => resolve(image);
+        });
+
+        let width = image.width;
+        let height = image.height;
+
+        const MAX_SIZE = 600;
+
+        if (width > height) {
+            if (width > MAX_SIZE) {
+                height *= MAX_SIZE / width;
+                width = MAX_SIZE;
+            }
+        } else {
+            if (height > MAX_SIZE) {
+                width *= MAX_SIZE / height;
+                height = MAX_SIZE;
+            }
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(image, 0, 0, width, height);
+
+        const jpegBlob = await new Promise((resolve) => {
+            canvas.toBlob(
+                (blob) => {
+                    resolve(blob);
+                },
+                'image/jpeg',
+                0.8,
+            );
+        });
+
+        userInputs.imageBlob = jpegBlob;
+        const jpegUrl = URL.createObjectURL(jpegBlob);
+        userInputs.imageUrl = jpegUrl;
     }
 
     function handleMaxDate(event) {
@@ -29,6 +78,67 @@
             ? (event.target.value = today)
             : event.target.value;
         userInputs.date = event.target.value;
+    }
+
+    let errorMessage = '';
+    let isLoading = false;
+    let isClicked = false;
+    let lastTimeout = null;
+
+    async function uploadFoodIntake() {
+        if (lastTimeout) {
+            clearTimeout(lastTimeout);
+        }
+        isClicked = true;
+
+        if (isLoading) return;
+        isLoading = true;
+
+        if (!userInputs.name) {
+            errorMessage = 'Please fill all required fields';
+            isLoading = false;
+            return;
+        }
+
+        let uid;
+        try {
+            const result = await addFoodIntake(
+                userInputs.name,
+                Number(userInputs.calories),
+                userInputs.date,
+                userInputs.timeCategory || null,
+            );
+
+            uid = result.uid;
+        } catch (error) {
+            errorMessage = 'Failed to add food intake';
+            isLoading = false;
+            return;
+        }
+
+        if (userInputs.imageBlob) {
+            const imageFile = new File([userInputs.imageBlob], 'file', {
+                type: 'image/jpeg',
+            });
+
+            try {
+                await uploadFoodImage(uid, imageFile);
+            } catch (error) {
+                errorMessage = 'Failed to upload image';
+                isLoading = false;
+                return;
+            }
+        }
+
+        isLoading = false;
+
+        lastTimeout = setTimeout(() => {
+            isClicked = false;
+        }, 150);
+
+        errorMessage = '';
+        userInputs = getInitialInputs();
+        isAddingModalOpen = false;
     }
 </script>
 
@@ -43,7 +153,7 @@
             <label for="image">Image</label>
             <input
                 bind:this={imageInput}
-                on:change={uploadImage}
+                on:change={onImageFileChanged}
                 type="file"
                 id="image"
                 name="image"
@@ -52,7 +162,11 @@
             />
             <div class="image-preview" on:click={() => imageInput.click()}>
                 {#if userInputs.imageUrl}
-                    <img src={userInputs.imageUrl} />
+                    <img
+                        src={userInputs.imageUrl}
+                        alt="selectedImage"
+                        style="cursor: pointer;"
+                    />
                 {:else}
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -74,7 +188,7 @@
                     </svg>
                 {/if}
             </div>
-            <label for="name">Name</label>
+            <label for="name">Name<span class="required">*</span></label>
             <input
                 type="text"
                 id="name"
@@ -91,7 +205,7 @@
                 oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/(\..*)\./g, '$1');"
                 bind:value={userInputs.calories}
             />
-            <label for="date">Date</label>
+            <label for="date">Date<span class="required">*</span></label>
             <input
                 type="date"
                 id="date"
@@ -115,7 +229,17 @@
                 <option value="DESSERT">Dessert</option>
                 <option value="NIGHT_SNACK">Night snack</option>
             </select>
-            <button on:click={() => console.log(userInputs)}>Add</button>
+            <button
+                on:click={uploadFoodIntake}
+                style="pointer-events: {isLoading ? 'none' : 'auto'};"
+                class:button-clicked={isClicked}
+                >{#if isLoading}
+                    <Loader></Loader>
+                {:else}
+                    Add
+                {/if}</button
+            >
+            <p class="error-message">{errorMessage}</p>
         </div>
     </div>
 </Modal>
@@ -205,7 +329,7 @@
     .image-preview > img {
         width: 100%;
         height: 100%;
-        object-fit: cover;
+        object-fit: contain;
     }
 
     .image-preview > svg {
@@ -215,7 +339,7 @@
         color: #ced4da;
     }
 
-    .input-container select {
+    .input-container > select {
         width: 100%;
         height: 40px;
         padding: 10px;
@@ -229,7 +353,7 @@
         cursor: pointer;
     }
 
-    .input-container button {
+    .input-container > button {
         appearance: none;
         padding: 10px;
         background-color: #007bff;
@@ -240,5 +364,21 @@
         width: 100%;
         height: 40px;
         cursor: pointer;
+    }
+
+    .input-container > button.button-clicked {
+        background-color: #0056b3;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .required {
+        color: #f50707;
+        margin-left: 5px;
+    }
+
+    .error-message {
+        color: #f50707;
+        font-size: 15px;
+        margin: 5px 0 0 0;
     }
 </style>

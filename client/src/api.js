@@ -8,6 +8,7 @@ export async function request(
     endpoint,
     body = null,
     queryParameters = null,
+    isFormData = false,
 ) {
     let url = hostUrl + endpoint;
 
@@ -16,7 +17,6 @@ export async function request(
     }
 
     let headers = {
-        'Content-Type': 'application/json',
         Authorization: localStorage.getItem('sessionKey'),
     };
 
@@ -26,7 +26,12 @@ export async function request(
     };
 
     if (body) {
-        options.body = JSON.stringify(body);
+        if (isFormData) {
+            options.body = body;
+        } else {
+            headers['Content-Type'] = 'application/json';
+            options.body = JSON.stringify(body);
+        }
     }
 
     let response = await fetch(url, options);
@@ -117,4 +122,17 @@ export async function deleteFoodIntake(uid) {
     await request('Delete', 'user/food_intakes/delete', {
         uid,
     });
+}
+
+export async function uploadFoodImage(uid, imageFile) {
+    const formData = new FormData();
+    formData.append('file', imageFile);
+
+    await request(
+        'POST',
+        'user/food_intakes/images/' + uid,
+        formData,
+        null,
+        true,
+    );
 }
