@@ -2,7 +2,7 @@
     import WaterCup from '../water_intakes/WaterCup.svelte';
     import CircleButton from '../water_intakes/CircleButton.svelte';
     import Modal from '../Modal.svelte';
-    import Button from '../water_intakes/Button.svelte';
+    import Button from '../Button.svelte';
     import { getWaterIntakesTotal, addWaterIntake } from '../../api.js';
 
     let newVolume = 0;
@@ -52,12 +52,14 @@
         <p>{waterIntakeTotalRes.total_volume} L</p>
 
         {@const waterLevel = Math.min(waterIntakeTotalRes.total_volume / 2, 1)}
-        <div>
+        <div style="margin-bottom: 20px;">
             <WaterCup level={waterLevel} />
         </div>
     {/await}
 
-    <Button btnTxt="Record" on:click={openModal} />
+    <Button isExpanded={false} on:click={openModal}>
+        <span>Record</span>
+    </Button>
     <Modal bind:isOpen={modalOpen}>
         <div
             slot="modal-background"
@@ -129,7 +131,9 @@
                     </svg>
                 </CircleButton>
             </div>
-            <Button btnTxt="Save" on:click={updateWaterIntake} />
+            <Button isExpanded={false} on:click={updateWaterIntake}>
+                <span>Save</span>
+            </Button>
         </div>
     </Modal>
 </div>

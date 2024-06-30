@@ -1,7 +1,8 @@
 <script>
     import { signUp } from '../../user.js';
     import { logIn } from '../../user.js';
-    import Loader from './Loader.svelte';
+    import Loader from '../Loader.svelte';
+    import Button from '../Button.svelte';
 
     let isLogin = true;
     let name = '';
@@ -10,16 +11,11 @@
     let loginErrorMsg = '';
     let signupErrorMsg = '';
     let isLoading = false;
-    let isClicked = false;
-    let lastTimeout = null;
 
     async function validateAndLogIn(email, password) {
-        if (lastTimeout) {
-            clearTimeout(lastTimeout);
+        if (isLoading) {
+            return;
         }
-        isClicked = true;
-
-        if (isLoading) return;
         isLoading = true;
 
         try {
@@ -30,21 +26,14 @@
 
         isLoading = false;
 
-        lastTimeout = setTimeout(() => {
-            isClicked = false;
-        }, 150);
-
         email = '';
         password = '';
     }
 
     async function validateAndSignUp(name, email, password) {
-        if (lastTimeout) {
-            clearTimeout(lastTimeout);
+        if (isLoading) {
+            return;
         }
-        isClicked = true;
-
-        if (isLoading) return;
         isLoading = true;
 
         try {
@@ -54,10 +43,6 @@
         }
 
         isLoading = false;
-
-        lastTimeout = setTimeout(() => {
-            isClicked = false;
-        }, 150);
 
         name = '';
         email = '';
@@ -69,28 +54,36 @@
     {#if isLogin}
         <h1>Log In</h1>
         <div class="container">
-            <label for="email">Email</label>
-            <input type="email" id="email" name="email" bind:value={email} />
-            <label for="password">Password</label>
-            <input
-                type="password"
-                id="password"
-                name="password"
-                bind:value={password}
-            />
-            <button
-                on:click={() => validateAndLogIn(email, password)}
-                style="pointer-events: {isLoading ? 'none' : 'auto'};"
-                class:button-clicked={isClicked}
-            >
-                {#if isLoading}
-                    <Loader></Loader>
-                {:else}
-                    Log In
-                {/if}
-            </button>
-
-            <p class="error-message">{loginErrorMsg}</p>
+            <div class="input-wrapper">
+                <div class="label-input">
+                    <label for="email">Email</label>
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        bind:value={email}
+                    />
+                </div>
+                <div class="label-input">
+                    <label for="password">Password</label>
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        bind:value={password}
+                    />
+                </div>
+            </div>
+            <div>
+                <Button on:click={() => validateAndLogIn(email, password)}>
+                    {#if isLoading}
+                        <Loader></Loader>
+                    {:else}
+                        <span>Log In</span>
+                    {/if}
+                </Button>
+                <p class="error-message">{loginErrorMsg}</p>
+            </div>
         </div>
         <div class="container-outside">
             <p>Don't have an account?</p>
@@ -103,29 +96,47 @@
     {:else}
         <h1>Sign Up</h1>
         <div class="container">
-            <label for="name">Name</label>
-            <input type="text" id="name" name="name" bind:value={name} />
-            <label for="email">Email</label>
-            <input type="email" id="email" name="email" bind:value={email} />
-            <label for="password">Password</label>
-            <input
-                type="password"
-                id="password"
-                name="password"
-                bind:value={password}
-            />
-            <button
-                on:click={() => validateAndSignUp(name, email, password)}
-                style="pointer-events: {isLoading ? 'none' : 'auto'};"
-                class:button-clicked={isClicked}
-            >
-                {#if isLoading}
-                    <Loader></Loader>
-                {:else}
-                    Sign Up
-                {/if}
-            </button>
-            <p class="error-message">{signupErrorMsg}</p>
+            <div class="input-wrapper">
+                <div class="label-input">
+                    <label for="name">Name</label>
+                    <input
+                        type="text"
+                        id="name"
+                        name="name"
+                        bind:value={name}
+                    />
+                </div>
+                <div class="label-input">
+                    <label for="email">Email</label>
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        bind:value={email}
+                    />
+                </div>
+                <div class="label-input">
+                    <label for="password">Password</label>
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        bind:value={password}
+                    />
+                </div>
+            </div>
+            <div>
+                <Button
+                    on:click={() => validateAndSignUp(name, email, password)}
+                >
+                    {#if isLoading}
+                        <Loader></Loader>
+                    {:else}
+                        <span>Sign Up</span>
+                    {/if}
+                </Button>
+                <p class="error-message">{signupErrorMsg}</p>
+            </div>
         </div>
         <div class="container-outside">
             <p>Already have an account?</p>
@@ -156,46 +167,39 @@
     .container {
         display: flex;
         flex-direction: column;
-        padding: 20px;
+        row-gap: 30px;
+        padding: 30px 20px 20px 20px;
         background-color: white;
         border-radius: 5px;
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         width: min(calc(100dvw - 40px), 400px);
     }
 
+    .input-wrapper {
+        display: flex;
+        flex-direction: column;
+        row-gap: 20px;
+    }
+
+    .label-input {
+        display: flex;
+        flex-direction: column;
+        row-gap: 5px;
+    }
+
     label {
         font-size: 20px;
-        margin: 10px 0 5px 0;
         pointer-events: none;
     }
 
     input {
         padding: 10px;
-        margin-bottom: 10px;
         border: 1px solid #ced4da;
         border-radius: 5px;
         outline: solid 2px #f8f8f8;
         width: 100%;
         height: 40px;
         font-size: 18px;
-    }
-
-    .container > button {
-        appearance: none;
-        margin-top: 10px;
-        padding: 10px;
-        background-color: #007bff;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        font-size: 16px;
-        height: 40px;
-        cursor: pointer;
-    }
-
-    .container > button.button-clicked {
-        background-color: #0042a2;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
 
     .error-message {

@@ -1,7 +1,8 @@
 <script>
     import { addFoodIntake, uploadFoodImage } from '../../api';
     import Modal from '../Modal.svelte';
-    import Loader from '../auth/Loader.svelte';
+    import Loader from '../Loader.svelte';
+    import Button from '../Button.svelte';
 
     export let isAddingModalOpen = false;
     const today = new Date().toISOString().split('T')[0];
@@ -82,15 +83,8 @@
 
     let errorMessage = '';
     let isLoading = false;
-    let isClicked = false;
-    let lastTimeout = null;
 
     async function uploadFoodIntake() {
-        if (lastTimeout) {
-            clearTimeout(lastTimeout);
-        }
-        isClicked = true;
-
         if (isLoading) return;
         isLoading = true;
 
@@ -131,10 +125,6 @@
         }
 
         isLoading = false;
-
-        lastTimeout = setTimeout(() => {
-            isClicked = false;
-        }, 150);
 
         errorMessage = '';
         userInputs = getInitialInputs();
@@ -229,16 +219,13 @@
                 <option value="DESSERT">Dessert</option>
                 <option value="NIGHT_SNACK">Night snack</option>
             </select>
-            <button
-                on:click={uploadFoodIntake}
-                style="pointer-events: {isLoading ? 'none' : 'auto'};"
-                class:button-clicked={isClicked}
-                >{#if isLoading}
+            <Button isExpanded={true} on:click={uploadFoodIntake}>
+                {#if isLoading}
                     <Loader></Loader>
                 {:else}
-                    Add
-                {/if}</button
-            >
+                    <span>Add</span>
+                {/if}
+            </Button>
             <p class="error-message">{errorMessage}</p>
         </div>
     </div>
@@ -351,24 +338,6 @@
         color: #000;
         background-color: #fff;
         cursor: pointer;
-    }
-
-    .input-container > button {
-        appearance: none;
-        padding: 10px;
-        background-color: #007bff;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        font-size: 16px;
-        width: 100%;
-        height: 40px;
-        cursor: pointer;
-    }
-
-    .input-container > button.button-clicked {
-        background-color: #0056b3;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
 
     .required {

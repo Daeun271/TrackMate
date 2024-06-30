@@ -3,36 +3,24 @@
         logoutFromCurrentDevice,
         logoutFromAllDevices,
     } from '../../user.js';
+    import Button from '../Button.svelte';
 </script>
 
 <div>
-    <button on:click={async () => await logoutFromCurrentDevice()}
-        >Log out from the current device</button
-    >
-    <button on:click={async () => await logoutFromAllDevices()}
-        >Log out from all devices</button
-    >
+    <Button isExpanded={false} on:click={logoutFromCurrentDevice}>
+        <span>Log out from the current device</span>
+    </Button>
+    <Button isExpanded={false} on:click={logoutFromAllDevices}>
+        <span>Log out from all devices</span>
+    </Button>
 </div>
 
 <style>
     div {
         display: flex;
         flex-direction: column;
+        align-items: center;
         row-gap: 30px;
         height: 100dvh;
-    }
-
-    button {
-        appearance: none;
-        background-color: #007bff;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        outline: none;
-        padding: 10px 20px;
-        margin-left: auto;
-        margin-right: auto;
-        cursor: pointer;
-        font-size: 16px;
     }
 </style>
