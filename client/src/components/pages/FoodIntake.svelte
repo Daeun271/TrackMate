@@ -67,6 +67,40 @@
 
         return foods;
     }
+
+    async function addFoodIntake(event) {
+        let foods = await foodIntakePromise;
+
+        const food = {
+            calories: Number(event.detail.userInputs.calories),
+            name: event.detail.userInputs.name,
+            consumed_at: event.detail.userInputs.date,
+            time_category: event.detail.userInputs.timeCategory || null,
+            has_image: event.detail.userInputs.imageUrl !== '',
+            imgSrc: event.detail.userInputs.imageUrl || null,
+            priority:
+                timeCategoryPriorities[event.detail.userInputs.timeCategory] ??
+                Infinity,
+            uid: event.detail.userInputs.uid,
+        };
+
+        if (foods) {
+            if (food.consumed_at in foods) {
+                foods[food.consumed_at].push(food);
+                foods[food.consumed_at] = foods[food.consumed_at].sort(
+                    (a, b) => a.priority - b.priority,
+                );
+            } else {
+                foods[food.consumed_at] = [food];
+            }
+        } else {
+            foods = {
+                [food.consumed_at]: [food],
+            };
+        }
+
+        foodIntakePromise = Promise.resolve(foods);
+    }
 </script>
 
 <div class="background">
@@ -135,7 +169,10 @@
         {/if}
     {/await}
 
-    <AddingModal bind:isAddingModalOpen={addingModalOpen} />
+    <AddingModal
+        bind:isAddingModalOpen={addingModalOpen}
+        on:add={addFoodIntake}
+    />
     <EditingModal bind:isEditingModalOpen={showingModalOpen} />
 </div>
 

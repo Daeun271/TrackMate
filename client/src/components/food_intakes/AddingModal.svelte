@@ -1,9 +1,12 @@
 <script>
-    import { addFoodIntake, uploadFoodImage } from '../../api';
+    import { addFoodIntake, uploadFoodImage, user } from '../../api';
     import Modal from '../Modal.svelte';
     import Loader from '../Loader.svelte';
     import Button from '../Button.svelte';
     import { formatDate } from '../pages/FoodIntake.svelte';
+    import { createEventDispatcher } from 'svelte';
+
+    const dispatch = createEventDispatcher();
 
     export let isAddingModalOpen = false;
 
@@ -17,6 +20,7 @@
             calories: '',
             date: today,
             timeCategory: '',
+            uid: '',
         };
     }
 
@@ -96,7 +100,6 @@
             return;
         }
 
-        let uid;
         try {
             const result = await addFoodIntake(
                 userInputs.name,
@@ -105,7 +108,7 @@
                 userInputs.timeCategory || null,
             );
 
-            uid = result.uid;
+            userInputs.uid = result.uid;
         } catch (error) {
             errorMessage = 'Failed to add food intake';
             isLoading = false;
@@ -118,7 +121,7 @@
             });
 
             try {
-                await uploadFoodImage(uid, imageFile);
+                await uploadFoodImage(userInputs.uid, imageFile);
             } catch (error) {
                 errorMessage = 'Failed to upload image';
                 isLoading = false;
@@ -127,6 +130,10 @@
         }
 
         isLoading = false;
+
+        dispatch('add', {
+            userInputs,
+        });
 
         errorMessage = '';
         userInputs = getInitialInputs();
