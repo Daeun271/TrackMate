@@ -3,6 +3,7 @@ import * as api from './api.js';
 
 api.unauthorizedEvent.subscribe(() => {
     localStorage.removeItem('sessionKey');
+    localStorage.removeItem('currentTab');
     user.set(null);
 });
 
@@ -38,12 +39,14 @@ export async function logIn(email, password) {
 export async function logoutFromCurrentDevice() {
     await api.userLogoutFromCurrentDevice();
     localStorage.removeItem('sessionKey');
+    localStorage.removeItem('currentTab');
     user.set(null);
 }
 
 export async function logoutFromAllDevices() {
     await api.userLogoutFromAllDevices();
     localStorage.removeItem('sessionKey');
+    localStorage.removeItem('currentTab');
     user.set(null);
 }
 
