@@ -18,9 +18,18 @@
             clicked = false;
         }, 150);
     }
+
+    export let floated = false;
+
+    let isMobile = window.matchMedia('(max-width: 480px)').matches;
 </script>
 
-<button class:button-clicked={clicked} on:click={onClick}>
+<button
+    class:button-clicked={clicked}
+    class:floating-button={floated}
+    style={isMobile ? 'bottom: 90px;' : 'bottom: 20px;'}
+    on:click={onClick}
+>
     <slot></slot>
 </button>
 
@@ -53,5 +62,16 @@
         background-color: #0042a2;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         transform: scale(1.05);
+    }
+
+    button.floating-button {
+        position: fixed;
+        right: 20px;
+        z-index: 1000;
+        box-shadow: 2px 2px 3px #999;
+    }
+
+    button.floating-button.button-clicked {
+        transform: none;
     }
 </style>

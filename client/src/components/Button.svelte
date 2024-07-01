@@ -20,12 +20,14 @@
     }
 
     export let isExpanded = true;
+    export let isLoading = false;
 </script>
 
 <button
     class="component-button"
     class:button-clicked={clicked}
     class:expanded={isExpanded}
+    class:loading={isLoading}
     on:click={onClick}><slot></slot></button
 >
 
@@ -55,5 +57,10 @@
 
     .expanded {
         width: 100%;
+    }
+
+    .loading {
+        cursor: none;
+        pointer-events: none;
     }
 </style>

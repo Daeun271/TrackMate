@@ -1,40 +1,139 @@
+<script context="module">
+    export function formatDate(date) {
+        const year = date.getFullYear();
+        const month = ('0' + (date.getMonth() + 1)).slice(-2);
+        const day = ('0' + date.getDate()).slice(-2);
+
+        return `${year}-${month}-${day}`;
+    }
+
+    const timeCategoryPriorities = {
+        BREAKFAST: 1,
+        LUNCH: 2,
+        DINNER: 3,
+        DESSERT: 4,
+        NIGHT_SNACK: 5,
+    };
+</script>
+
 <script>
     import AddingModal from '../food_intakes/AddingModal.svelte';
     import EditingModal from '../food_intakes/EditingModal.svelte';
+    import CircleButton from '../CircleButton.svelte';
+    import { getFoodIntakesTotal, getFoodImageUrl } from '../../api';
 
     let addingModalOpen = false;
     let showingModalOpen = false;
 
-    let timeCategory = '';
+    let foodIntakePromise = getFoodIntakes();
 
-    $: today = new Date().toISOString().split('T')[0];
+    async function getFoodIntakes() {
+        const today = new Date();
+        const tomorrow = new Date(today.setDate(today.getDate() + 1));
+        const lastWeek = new Date(today.setDate(today.getDate() - 7));
+        const foodIntakeRes = await getFoodIntakesTotal(
+            formatDate(lastWeek),
+            formatDate(tomorrow),
+        );
+
+        if (foodIntakeRes.foods.length === 0) {
+            return null;
+        }
+
+        const foods = {};
+
+        for (let i = 0; i < foodIntakeRes.foods.length; i++) {
+            const food = foodIntakeRes.foods[i];
+
+            if (food.has_image === true) {
+                food.imgSrc = getFoodImageUrl(food.uid);
+            } else {
+                food.imgSrc = null;
+            }
+
+            food.priority =
+                timeCategoryPriorities[food.time_category] ?? Infinity;
+
+            if (!(food.consumed_at in foods)) {
+                foods[food.consumed_at] = [food];
+            } else {
+                foods[food.consumed_at].push(food);
+            }
+        }
+
+        for (const key in foods) {
+            foods[key] = foods[key].sort((a, b) => a.priority - b.priority);
+        }
+
+        return foods;
+    }
 </script>
 
 <div class="background">
-    <h1>26.06.24</h1>
-    <div class="foodintake-wrapper">
-        <img
-            src="https://www.einfachkochen.de/sites/einfachkochen.de/files/styles/full_width_tablet_4_3/public/2023-01/2023_hamburger_aufmacher.jpg?h=6eb229a4&itok=AHgcUVO2"
-            alt="food"
-            on:click={() => (showingModalOpen = true)}
-        />
-        <div class="add-wrapper">
-            <svg
-                on:click={() => (addingModalOpen = true)}
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width="1"
-                stroke="currentColor"
-            >
-                <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                />
-            </svg>
-        </div>
-    </div>
+    {#await foodIntakePromise}
+        <p>loading...</p>
+    {:then foods}
+        {#if !foods}
+            <div class="empty-container">
+                <p>There is no food intake data.</p>
+                <p>Click the button below to record your food intake.</p>
+                <svg
+                    on:click={() => (addingModalOpen = true)}
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1"
+                    stroke="currentColor"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+                    />
+                </svg>
+            </div>
+        {:else}
+            {#each Object.keys(foods) as date}
+                <h1>{date}</h1>
+                <div
+                    class="foodintake-wrapper"
+                    on:click={() => (showingModalOpen = true)}
+                >
+                    {#each foods[date] as food}
+                        {#if food.imgSrc === null}
+                            <div class="name-container">
+                                <span>{food.name}</span>
+                            </div>
+                        {:else}
+                            <img
+                                src={food.imgSrc}
+                                alt="food"
+                                on:click={() => (showingModalOpen = true)}
+                            />
+                        {/if}
+                    {/each}
+                </div>
+            {/each}
+            {#if !showingModalOpen && !addingModalOpen}
+                <CircleButton floated on:click={() => (addingModalOpen = true)}>
+                    <svg
+                        class="floating-button"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke-width="1"
+                        stroke="currentColor"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            d="M12 9v6m3-3H9"
+                        />
+                    </svg>
+                </CircleButton>
+            {/if}
+        {/if}
+    {/await}
 
     <AddingModal bind:isAddingModalOpen={addingModalOpen} />
     <EditingModal bind:isEditingModalOpen={showingModalOpen} />
@@ -50,7 +149,7 @@
         padding: 20px;
     }
 
-    .background > h1 {
+    .background h1 {
         margin: 0;
         font-size: 30px;
     }
@@ -69,16 +168,42 @@
         cursor: pointer;
     }
 
-    .add-wrapper {
+    .floating-button {
+        width: 50px;
+        height: 50px;
+        cursor: pointer;
+    }
+
+    .empty-container {
         display: flex;
+        flex-direction: column;
         justify-content: center;
         align-items: center;
         border: none;
+        margin-top: auto;
+        margin-bottom: auto;
+        row-gap: 20px;
     }
 
-    .add-wrapper > svg {
-        width: 50px;
-        height: 50px;
+    .empty-container p {
+        margin: 0;
+    }
+
+    .empty-container svg {
+        width: 100px;
+        height: 100px;
+        cursor: pointer;
+    }
+
+    .name-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border: 1px solid #ced4da;
+        border-radius: 5px;
+        outline: solid 2px #f8f8f8;
+        padding: 10px;
+        font-size: 20px;
         cursor: pointer;
     }
 </style>

@@ -1,6 +1,23 @@
+<script context="module">
+    export function formatDateTime(date) {
+        const pad = (num) => (num.toString().length === 2 ? num : '0' + num);
+
+        const year = date.getFullYear();
+        const month = pad(date.getMonth() + 1);
+        const day = pad(date.getDate());
+        const hours = pad(date.getHours());
+        const minutes = pad(date.getMinutes());
+        const seconds = pad(date.getSeconds());
+        const milliseconds = date.getMilliseconds().toString().padStart(3, '0');
+
+        const formattedStr = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}.${milliseconds}`;
+        return formattedStr;
+    }
+</script>
+
 <script>
     import WaterCup from '../water_intakes/WaterCup.svelte';
-    import CircleButton from '../water_intakes/CircleButton.svelte';
+    import CircleButton from '../CircleButton.svelte';
     import Modal from '../Modal.svelte';
     import Button from '../Button.svelte';
     import { getWaterIntakesTotal, addWaterIntake } from '../../api.js';
@@ -12,14 +29,14 @@
     let waterIntakePromise = getWaterIntake();
     async function getWaterIntake() {
         const waterIntakeTotalRes = await getWaterIntakesTotal(
-            new Date().toISOString(),
+            formatDateTime(new Date()),
         );
 
         return waterIntakeTotalRes;
     }
 
     async function updateWaterIntake() {
-        await addWaterIntake(newVolume, new Date().toISOString());
+        await addWaterIntake(newVolume, formatDateTime(new Date()));
         modalOpen = false;
         waterIntakePromise = getWaterIntake();
     }

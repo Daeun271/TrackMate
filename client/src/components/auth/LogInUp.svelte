@@ -75,7 +75,10 @@
                 </div>
             </div>
             <div>
-                <Button on:click={() => validateAndLogIn(email, password)}>
+                <Button
+                    bind:isLoading
+                    on:click={() => validateAndLogIn(email, password)}
+                >
                     {#if isLoading}
                         <Loader></Loader>
                     {:else}
@@ -127,6 +130,7 @@
             </div>
             <div>
                 <Button
+                    bind:isLoading
                     on:click={() => validateAndSignUp(name, email, password)}
                 >
                     {#if isLoading}

@@ -1,10 +1,9 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime, Float, LargeBinary, Enum
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime, Float, LargeBinary, Enum, Date
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from .database import Base
 import enum
 import uuid
-from datetime import datetime, timezone
 
 class User(Base):
     __tablename__ = "users"
@@ -57,11 +56,12 @@ class FoodIntake(Base):
     __tablename__ = "food_intakes"
 
     id = Column(Integer, primary_key=True)
-    consumed_at = Column(DateTime, server_default=func.now(), nullable=False)
+    consumed_at = Column(Date, nullable=False)
     time_category = Column(Enum(TimeCategory))
     name = Column(String, nullable=False)
     calories = Column(Float)
     uid = Column(String, default=lambda: str(uuid.uuid4()), unique=True, nullable=False, index=True)
+    has_image = Column(Boolean, default=False, nullable=False)
     user_id = Column(Integer, ForeignKey("users.id"))
 
     user = relationship("User", back_populates="food_intakes")

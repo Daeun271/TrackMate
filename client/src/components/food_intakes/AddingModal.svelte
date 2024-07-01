@@ -3,9 +3,11 @@
     import Modal from '../Modal.svelte';
     import Loader from '../Loader.svelte';
     import Button from '../Button.svelte';
+    import { formatDate } from '../pages/FoodIntake.svelte';
 
     export let isAddingModalOpen = false;
-    const today = new Date().toISOString().split('T')[0];
+
+    let today = formatDate(new Date());
 
     function getInitialInputs() {
         return {
@@ -88,7 +90,7 @@
         if (isLoading) return;
         isLoading = true;
 
-        if (!userInputs.name) {
+        if (userInputs.name.trim() === '') {
             errorMessage = 'Please fill all required fields';
             isLoading = false;
             return;
@@ -219,7 +221,11 @@
                 <option value="DESSERT">Dessert</option>
                 <option value="NIGHT_SNACK">Night snack</option>
             </select>
-            <Button isExpanded={true} on:click={uploadFoodIntake}>
+            <Button
+                bind:isLoading
+                isExpanded={true}
+                on:click={uploadFoodIntake}
+            >
                 {#if isLoading}
                     <Loader></Loader>
                 {:else}

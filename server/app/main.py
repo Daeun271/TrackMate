@@ -23,7 +23,9 @@ origins = [
 def get_request_auth_user_id(request: Request) -> Optional[int]:
     key = request.headers.get('Authorization')  
     if key is None:
-        return None
+        key = request.query_params.get('auth')
+        if key is None:
+            return None
 
     db = SessionLocal()
     session = db.query(models.Session).filter(models.Session.key == key).first()
@@ -50,6 +52,7 @@ async def auth_middleware(request: Request, call_next):
         request.state.user_id = user_id
     else:
         return JSONResponse(status_code=401, content={"detail": "Unauthorized"})
+
     return await call_next(request)
 
 
@@ -173,7 +176,8 @@ def image_path_for_uid(uid: str) -> str:
 def upload_food_image(
     uid: str, request: Request, file: UploadFile = File(...), db: Session = Depends(get_db)
 ):
-    if db.query(models.FoodIntake).filter(models.FoodIntake.uid == uid and models.FoodIntake.user_id == request.state.user_id).first() is None:
+    db_food_intake = db.query(models.FoodIntake).filter(models.FoodIntake.uid == uid and models.FoodIntake.user_id == request.state.user_id).first()
+    if db_food_intake is None:
         raise HTTPException(status_code=404, detail="Food intake not found")
     
     image = file.file.read()
@@ -188,6 +192,9 @@ def upload_food_image(
     
     with open(image_path, "wb") as image_file:
         image_file.write(image)
+        
+    db_food_intake.has_image = True
+    db.commit()
 
 
 @app.get("/user/food_intakes/images/{uid}")

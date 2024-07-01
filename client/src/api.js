@@ -80,9 +80,9 @@ export async function addWaterIntake(volume, createdAt) {
     });
 }
 
-export async function getWaterIntakesTotal(date) {
+export async function getWaterIntakesTotal(dateTime) {
     return await request('POST', 'user/water_intakes/get_total_volume', {
-        date,
+        date_time: dateTime,
     });
 }
 
@@ -134,5 +134,15 @@ export async function uploadFoodImage(uid, imageFile) {
         formData,
         null,
         true,
+    );
+}
+
+export function getFoodImageUrl(uid) {
+    return (
+        hostUrl +
+        'user/food_intakes/images/' +
+        uid +
+        '?auth=' +
+        localStorage.getItem('sessionKey')
     );
 }
