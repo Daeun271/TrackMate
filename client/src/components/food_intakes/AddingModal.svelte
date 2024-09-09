@@ -253,6 +253,12 @@
         height: 100%;
     }
 
+    @media (max-width: 400px) {
+        .modal-wrapper {
+            height: auto;
+        }
+    }
+
     .input-container {
         display: flex;
         flex-direction: column;
