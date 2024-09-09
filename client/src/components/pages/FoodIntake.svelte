@@ -193,9 +193,10 @@
 
     .foodintake-wrapper {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        justify-content: space-around;
+        grid-template-columns: repeat(auto-fill, 100px);
         grid-auto-rows: 100px;
-        gap: 20px;
+        gap: 15px;
     }
 
     .foodintake-wrapper img {
