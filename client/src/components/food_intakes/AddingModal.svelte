@@ -1,5 +1,5 @@
 <script>
-    import { addFoodIntake, uploadFoodImage, user } from '../../api';
+    import { addFoodIntake, uploadFoodImage } from '../../api';
     import Modal from '../Modal.svelte';
     import Loader from '../Loader.svelte';
     import Button from '../Button.svelte';
@@ -100,6 +100,12 @@
             return;
         }
 
+        if (userInputs.date > today) {
+            errorMessage = 'Date cannot be in the future';
+            isLoading = false;
+            return;
+        }
+
         try {
             const result = await addFoodIntake(
                 userInputs.name,
@@ -110,7 +116,8 @@
 
             userInputs.uid = result.uid;
         } catch (error) {
-            errorMessage = 'Failed to add food intake';
+            errorMessage =
+                'Failed to add the food intake. Please try again later.';
             isLoading = false;
             return;
         }
@@ -123,7 +130,8 @@
             try {
                 await uploadFoodImage(userInputs.uid, imageFile);
             } catch (error) {
-                errorMessage = 'Failed to upload image';
+                errorMessage =
+                    'Failed to upload image. Please try again later.';
                 isLoading = false;
                 return;
             }
@@ -135,8 +143,6 @@
             userInputs,
         });
 
-        errorMessage = '';
-        userInputs = getInitialInputs();
         isAddingModalOpen = false;
     }
 </script>
@@ -145,6 +151,7 @@
     bind:isOpen={isAddingModalOpen}
     on:close={() => {
         userInputs = getInitialInputs();
+        errorMessage = '';
     }}
 >
     <div class="modal-wrapper">
@@ -211,7 +218,7 @@
                 name="date"
                 max={today}
                 on:change={handleMaxDate}
-                value={today}
+                bind:value={userInputs.date}
             />
             <label for="category">Category</label>
             <select

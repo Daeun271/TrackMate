@@ -65,10 +65,6 @@ class FoodIntakeUpdateRequest(FoodIntakeBaseWithUid):
     pass
 
 
-class FoodIntakeUpdateResponse(FoodIntakeUid):
-    pass
-
-
 class FoodIntakeDeleteRequest(FoodIntakeUid):
     pass
 

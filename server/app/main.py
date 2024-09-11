@@ -148,14 +148,11 @@ def get_food_intakes_by_user_id_and_date_range(food_intakes_request: schemas.Foo
     return crud.get_food_intakes_by_user_id_and_date_range(db, food_intakes_request=food_intakes_request, user_id=request.state.user_id)
 
 
-@app.post("/user/food_intakes/update", response_model=schemas.FoodIntakeUpdateResponse)
+@app.post("/user/food_intakes/update")
 def update_food_intake(
     food_intake: schemas.FoodIntakeUpdateRequest, request: Request, db: Session = Depends(get_db)
 ):
-    uid = crud.update_food_intake(db=db, food_intake=food_intake, user_id=request.state.user_id)
-    if uid is None:
-        raise HTTPException(status_code=404, detail="Food intake not found")
-    return schemas.FoodIntakeUpdateResponse(uid=uid)
+    crud.update_food_intake(db=db, food_intake=food_intake, user_id=request.state.user_id)
 
 
 @app.delete("/user/food_intakes/delete")

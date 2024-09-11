@@ -93,7 +93,6 @@ def update_food_intake(db: Session, food_intake: schemas.FoodIntakeUpdateRequest
     db_food_intake.consumed_at = food_intake.consumed_at
     db_food_intake.time_category = food_intake.time_category
     db.commit()
-    return schemas.FoodIntakeUpdateResponse(uid=db_food_intake.uid)
 
 
 def delete_food_intake(db: Session, food_intake: schemas.FoodIntakeDeleteRequest, user_id: int):

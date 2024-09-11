@@ -23,7 +23,7 @@
     import { getFoodIntakesTotal, getFoodImageUrl } from '../../api';
 
     let addingModalOpen = false;
-    let showingModalOpen = false;
+    let editingModalOpen = false;
 
     let foodIntakePromise = getFoodIntakes();
 
@@ -46,9 +46,9 @@
             const food = foodIntakeRes.foods[i];
 
             if (food.has_image === true) {
-                food.imgSrc = getFoodImageUrl(food.uid);
+                food.img_src = getFoodImageUrl(food.uid);
             } else {
-                food.imgSrc = null;
+                food.img_src = null;
             }
 
             food.priority =
@@ -77,7 +77,7 @@
             consumed_at: event.detail.userInputs.date,
             time_category: event.detail.userInputs.timeCategory || null,
             has_image: event.detail.userInputs.imageUrl !== '',
-            imgSrc: event.detail.userInputs.imageUrl || null,
+            img_src: event.detail.userInputs.imageUrl || null,
             priority:
                 timeCategoryPriorities[event.detail.userInputs.timeCategory] ??
                 Infinity,
@@ -97,6 +97,58 @@
             foods = {
                 [food.consumed_at]: [food],
             };
+        }
+
+        foodIntakePromise = Promise.resolve(foods);
+    }
+
+    let foodIntake = null;
+
+    function displayFoodIntake(food) {
+        foodIntake = structuredClone(food);
+        editingModalOpen = true;
+    }
+
+    async function updateFoodIntake(event) {
+        let foods = await foodIntakePromise;
+
+        const newFoodIntake = {
+            calories: Number(event.detail.calories),
+            name: event.detail.name,
+            consumed_at: event.detail.consumed_at,
+            time_category: event.detail.time_category || null,
+            has_image: event.detail.img_src !== '',
+            img_src: event.detail.img_src || null,
+            priority:
+                timeCategoryPriorities[event.detail.time_category] ?? Infinity,
+            uid: event.detail.uid,
+        };
+
+        if (foods) {
+            for (const date in foods) {
+                let oldFoodIntake = foods[date].find(
+                    (food) => food.uid === newFoodIntake.uid,
+                );
+
+                if (oldFoodIntake) {
+                    const index = foods[date].indexOf(oldFoodIntake);
+                    foods[date].splice(index, 1);
+                    if (foods[date].length === 0) {
+                        delete foods[date];
+                    }
+
+                    if (newFoodIntake.consumed_at in foods) {
+                        foods[newFoodIntake.consumed_at].push(newFoodIntake);
+                        foods[newFoodIntake.consumed_at] = foods[
+                            newFoodIntake.consumed_at
+                        ].sort((a, b) => a.priority - b.priority);
+                    } else {
+                        foods[newFoodIntake.consumed_at] = [newFoodIntake];
+                    }
+
+                    break;
+                }
+            }
         }
 
         foodIntakePromise = Promise.resolve(foods);
@@ -127,28 +179,30 @@
                 </svg>
             </div>
         {:else}
-            {#each Object.keys(foods) as date}
+            {#each Object.keys(foods).toSorted((a, b) => {
+                return new Date(b).getTime() - new Date(a).getTime();
+            }) as date}
                 <h1>{date}</h1>
-                <div
-                    class="foodintake-wrapper"
-                    on:click={() => (showingModalOpen = true)}
-                >
+                <div class="foodintake-wrapper">
                     {#each foods[date] as food}
-                        {#if food.imgSrc === null}
-                            <div class="name-container">
+                        {#if food.img_src === null}
+                            <div
+                                class="name-container"
+                                on:click={() => displayFoodIntake(food)}
+                            >
                                 <span>{food.name}</span>
                             </div>
                         {:else}
                             <img
-                                src={food.imgSrc}
+                                src={food.img_src}
                                 alt="food"
-                                on:click={() => (showingModalOpen = true)}
+                                on:click={() => displayFoodIntake(food)}
                             />
                         {/if}
                     {/each}
                 </div>
             {/each}
-            {#if !showingModalOpen && !addingModalOpen}
+            {#if !editingModalOpen && !addingModalOpen}
                 <CircleButton floated on:click={() => (addingModalOpen = true)}>
                     <svg
                         class="floating-button"
@@ -173,7 +227,11 @@
         bind:isAddingModalOpen={addingModalOpen}
         on:add={addFoodIntake}
     />
-    <EditingModal bind:isEditingModalOpen={showingModalOpen} />
+    <EditingModal
+        bind:isEditingModalOpen={editingModalOpen}
+        bind:foodIntake
+        on:edit={updateFoodIntake}
+    />
 </div>
 
 <style>
