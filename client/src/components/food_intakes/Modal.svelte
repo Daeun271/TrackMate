@@ -2,18 +2,36 @@
     import Modal from '../Modal.svelte';
     import Button from '../Button.svelte';
     import Loader from '../Loader.svelte';
-    import { updateFoodIntake, uploadFoodImage } from '../../api';
+    import {
+        updateFoodIntake,
+        uploadFoodImage,
+        addFoodIntake,
+    } from '../../api';
     import { formatDate } from '../pages/FoodIntake.svelte';
     import { createEventDispatcher } from 'svelte';
-    export let isEditingModalOpen = false;
+    export let isModalOpen = false;
+    export let isAdding = true;
     export let foodIntake = {};
 
     let today = formatDate(new Date());
 
     const dispatch = createEventDispatcher();
 
+    function getInitialInputs() {
+        return {
+            uid: '',
+            name: '',
+            calories: '',
+            consumed_at: today,
+            time_category: '',
+            img_src: '',
+            img_blob: null,
+        };
+    }
+
+    foodIntake = getInitialInputs();
+
     let imageInput;
-    let blob;
 
     async function onImageFileChanged(event) {
         const file = event.target.files[0];
@@ -62,7 +80,7 @@
             );
         });
 
-        blob = jpegBlob;
+        foodIntake.img_blob = jpegBlob;
         const jpegUrl = URL.createObjectURL(jpegBlob);
         foodIntake.img_src = jpegUrl;
     }
@@ -71,13 +89,13 @@
         new Date(event.target.value) > new Date()
             ? (event.target.value = today)
             : event.target.value;
-        foodIntake.date = event.target.value;
+        foodIntake.consumed_at = event.target.value;
     }
 
     let errorMessage = '';
     let isLoading = false;
 
-    async function editFoodIntake() {
+    async function uploadFoodIntake() {
         if (isLoading) return;
         isLoading = true;
 
@@ -93,23 +111,41 @@
             return;
         }
 
-        try {
-            await updateFoodIntake(
-                foodIntake.uid,
-                foodIntake.name,
-                foodIntake.calories,
-                foodIntake.consumed_at,
-                foodIntake.time_category || null,
-            );
-        } catch (error) {
-            errorMessage =
-                'Failed to update the food intake. Please try again later.';
-            isLoading = false;
-            return;
+        if (isAdding) {
+            try {
+                const result = await addFoodIntake(
+                    foodIntake.name,
+                    Number(foodIntake.calories),
+                    foodIntake.consumed_at,
+                    foodIntake.time_category || null,
+                );
+
+                foodIntake.uid = result.uid;
+            } catch (error) {
+                errorMessage =
+                    'Failed to add the food intake. Please try again later.';
+                isLoading = false;
+                return;
+            }
+        } else {
+            try {
+                await updateFoodIntake(
+                    foodIntake.uid,
+                    foodIntake.name,
+                    Number(foodIntake.calories),
+                    foodIntake.consumed_at,
+                    foodIntake.time_category || null,
+                );
+            } catch (error) {
+                errorMessage =
+                    'Failed to update the food intake. Please try again later.';
+                isLoading = false;
+                return;
+            }
         }
 
-        if (blob) {
-            const imageFile = new File([blob], 'file', {
+        if (foodIntake.img_blob) {
+            const imageFile = new File([foodIntake.img_blob], 'file', {
                 type: 'image/jpeg',
             });
 
@@ -125,13 +161,23 @@
 
         isLoading = false;
 
-        dispatch('edit', foodIntake);
+        if (isAdding) {
+            dispatch('add', foodIntake);
+        } else {
+            dispatch('edit', foodIntake);
+        }
 
-        isEditingModalOpen = false;
+        isModalOpen = false;
     }
 </script>
 
-<Modal bind:isOpen={isEditingModalOpen} on:close={() => (errorMessage = '')}>
+<Modal
+    bind:isOpen={isModalOpen}
+    on:close={() => {
+        errorMessage = '';
+        foodIntake = getInitialInputs();
+    }}
+>
     <div class="modal-wrapper">
         <div class="input-container">
             <label for="image">Image</label>
@@ -213,13 +259,31 @@
                 <option value="DESSERT">Dessert</option>
                 <option value="NIGHT_SNACK">Night snack</option>
             </select>
-            <Button bind:isLoading isExpanded={true} on:click={editFoodIntake}>
-                {#if isLoading}
-                    <Loader></Loader>
-                {:else}
-                    <span>Edit</span>
-                {/if}
-            </Button>
+            {#if isAdding}
+                <Button
+                    bind:isLoading
+                    isExpanded={true}
+                    on:click={uploadFoodIntake}
+                >
+                    {#if isLoading}
+                        <Loader></Loader>
+                    {:else}
+                        <span>Add</span>
+                    {/if}
+                </Button>
+            {:else}
+                <Button
+                    bind:isLoading
+                    isExpanded={true}
+                    on:click={uploadFoodIntake}
+                >
+                    {#if isLoading}
+                        <Loader></Loader>
+                    {:else}
+                        <span>Edit</span>
+                    {/if}
+                </Button>
+            {/if}
             <p class="error-message">{errorMessage}</p>
         </div>
     </div>

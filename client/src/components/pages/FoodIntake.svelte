@@ -17,13 +17,12 @@
 </script>
 
 <script>
-    import AddingModal from '../food_intakes/AddingModal.svelte';
-    import EditingModal from '../food_intakes/EditingModal.svelte';
+    import Modal from '../food_intakes/Modal.svelte';
     import CircleButton from '../CircleButton.svelte';
     import { getFoodIntakesTotal, getFoodImageUrl } from '../../api';
 
-    let addingModalOpen = false;
-    let editingModalOpen = false;
+    let isModalOpen = false;
+    let isAdding = true;
 
     let foodIntakePromise = getFoodIntakes();
 
@@ -72,16 +71,15 @@
         let foods = await foodIntakePromise;
 
         const food = {
-            calories: Number(event.detail.userInputs.calories),
-            name: event.detail.userInputs.name,
-            consumed_at: event.detail.userInputs.date,
-            time_category: event.detail.userInputs.timeCategory || null,
-            has_image: event.detail.userInputs.imageUrl !== '',
-            img_src: event.detail.userInputs.imageUrl || null,
+            calories: Number(event.detail.calories),
+            name: event.detail.name,
+            consumed_at: event.detail.consumed_at,
+            time_category: event.detail.time_category || null,
+            has_image: event.detail.img_src !== '',
+            img_src: event.detail.img_src || null,
             priority:
-                timeCategoryPriorities[event.detail.userInputs.timeCategory] ??
-                Infinity,
-            uid: event.detail.userInputs.uid,
+                timeCategoryPriorities[event.detail.time_category] ?? Infinity,
+            uid: event.detail.uid,
         };
 
         if (foods) {
@@ -106,7 +104,8 @@
 
     function displayFoodIntake(food) {
         foodIntake = structuredClone(food);
-        editingModalOpen = true;
+        isAdding = false;
+        isModalOpen = true;
     }
 
     async function updateFoodIntake(event) {
@@ -164,7 +163,10 @@
                 <p>There is no food intake data.</p>
                 <p>Click the button below to record your food intake.</p>
                 <svg
-                    on:click={() => (addingModalOpen = true)}
+                    on:click={() => {
+                        isAdding = true;
+                        isModalOpen = true;
+                    }}
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
                     viewBox="0 0 24 24"
@@ -202,8 +204,14 @@
                     {/each}
                 </div>
             {/each}
-            {#if !editingModalOpen && !addingModalOpen}
-                <CircleButton floated on:click={() => (addingModalOpen = true)}>
+            {#if !isModalOpen}
+                <CircleButton
+                    floated
+                    on:click={() => {
+                        isAdding = true;
+                        isModalOpen = true;
+                    }}
+                >
                     <svg
                         class="floating-button"
                         xmlns="http://www.w3.org/2000/svg"
@@ -223,14 +231,12 @@
         {/if}
     {/await}
 
-    <AddingModal
-        bind:isAddingModalOpen={addingModalOpen}
-        on:add={addFoodIntake}
-    />
-    <EditingModal
-        bind:isEditingModalOpen={editingModalOpen}
+    <Modal
+        bind:isModalOpen
         bind:foodIntake
+        bind:isAdding
         on:edit={updateFoodIntake}
+        on:add={addFoodIntake}
     />
 </div>
 
