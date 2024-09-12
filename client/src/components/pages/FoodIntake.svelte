@@ -20,6 +20,8 @@
     import Modal from '../food_intakes/Modal.svelte';
     import CircleButton from '../CircleButton.svelte';
     import { getFoodIntakesTotal, getFoodImageUrl } from '../../api';
+    import EmptyPage from '../EmptyPage.svelte';
+    import imageUrl from '../../assets/icons/vegan-food.png?url';
 
     let isModalOpen = false;
     let isAdding = true;
@@ -183,27 +185,15 @@
         <p>loading...</p>
     {:then foods}
         {#if !foods}
-            <div class="empty-container">
-                <p>There is no food intake data.</p>
-                <p>Click the button below to record your food intake.</p>
-                <svg
-                    on:click={() => {
-                        isAdding = true;
-                        isModalOpen = true;
-                    }}
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke-width="1"
-                    stroke="currentColor"
-                >
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                    />
-                </svg>
-            </div>
+            <EmptyPage
+                text1="No food intake found"
+                text2="Get started by adding a new food intake"
+                {imageUrl}
+                on:modalClick={() => {
+                    isAdding = true;
+                    isModalOpen = true;
+                }}
+            ></EmptyPage>
         {:else}
             {#each Object.keys(foods).toSorted((a, b) => {
                 return new Date(b).getTime() - new Date(a).getTime();
@@ -298,27 +288,6 @@
     .floating-button {
         width: 50px;
         height: 50px;
-        cursor: pointer;
-    }
-
-    .empty-container {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        border: none;
-        margin-top: auto;
-        margin-bottom: auto;
-        row-gap: 20px;
-    }
-
-    .empty-container p {
-        margin: 0;
-    }
-
-    .empty-container svg {
-        width: 100px;
-        height: 100px;
         cursor: pointer;
     }
 
