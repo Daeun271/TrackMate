@@ -22,6 +22,7 @@
     export let isExpanded = true;
     export let isLoading = false;
     export let backgroundColor = '#007bff';
+    export let bordered = false;
 </script>
 
 <button
@@ -29,6 +30,7 @@
     class:button-clicked={clicked}
     class:expanded={isExpanded}
     class:loading={isLoading}
+    class:bordered
     style:background-color={backgroundColor}
     on:click={onClick}><slot></slot></button
 >
@@ -38,6 +40,7 @@
         appearance: none;
 
         color: white;
+        background-color: #007bff;
 
         border: none;
         border-radius: 5px;
@@ -63,5 +66,11 @@
     .loading {
         cursor: none;
         pointer-events: none;
+    }
+
+    .bordered {
+        border: 2px solid #007bff;
+        background-color: white;
+        color: #007bff;
     }
 </style>
