@@ -6,6 +6,7 @@
         updateFoodIntake,
         uploadFoodImage,
         addFoodIntake,
+        deleteFoodIntake,
     } from '../../api';
     import { formatDate } from '../pages/FoodIntake.svelte';
     import { createEventDispatcher } from 'svelte';
@@ -169,12 +170,33 @@
 
         isModalOpen = false;
     }
+
+    let deleteErrorMessage = '';
+
+    async function removeFoodIntake() {
+        if (isLoading) return;
+        isLoading = true;
+
+        try {
+            await deleteFoodIntake(foodIntake.uid);
+        } catch (error) {
+            deleteErrorMessage =
+                'Failed to delete the food intake. Please try again later.';
+            isLoading = false;
+            return;
+        }
+
+        isLoading = false;
+        dispatch('delete', foodIntake);
+        isModalOpen = false;
+    }
 </script>
 
 <Modal
     bind:isOpen={isModalOpen}
     on:close={() => {
         errorMessage = '';
+        deleteErrorMessage = '';
         foodIntake = getInitialInputs();
     }}
 >
@@ -271,6 +293,7 @@
                         <span>Add</span>
                     {/if}
                 </Button>
+                <p class="error-message">{errorMessage}</p>
             {:else}
                 <Button
                     bind:isLoading
@@ -283,8 +306,21 @@
                         <span>Edit</span>
                     {/if}
                 </Button>
+                <p class="error-message">{errorMessage}</p>
+                <Button
+                    bind:isLoading
+                    isExpanded={true}
+                    backgroundColor="#f50707"
+                    on:click={removeFoodIntake}
+                >
+                    {#if isLoading}
+                        <Loader></Loader>
+                    {:else}
+                        <span>Delete</span>
+                    {/if}
+                </Button>
+                <p class="error-message">{deleteErrorMessage}</p>
             {/if}
-            <p class="error-message">{errorMessage}</p>
         </div>
     </div>
 </Modal>
@@ -412,6 +448,6 @@
     .error-message {
         color: #f50707;
         font-size: 15px;
-        margin: 5px 0 0 0;
+        margin: 5px 0 5px 0;
     }
 </style>

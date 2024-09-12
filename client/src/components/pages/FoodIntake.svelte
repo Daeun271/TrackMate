@@ -152,6 +152,30 @@
 
         foodIntakePromise = Promise.resolve(foods);
     }
+
+    async function deleteFoodIntake(event) {
+        let foods = await foodIntakePromise;
+
+        if (foods) {
+            for (const date in foods) {
+                let foodIntake = foods[date].find(
+                    (food) => food.uid === event.detail.uid,
+                );
+
+                if (foodIntake) {
+                    const index = foods[date].indexOf(foodIntake);
+                    foods[date].splice(index, 1);
+                    if (foods[date].length === 0) {
+                        delete foods[date];
+                    }
+
+                    break;
+                }
+            }
+        }
+
+        foodIntakePromise = Promise.resolve(foods);
+    }
 </script>
 
 <div class="background">
@@ -235,8 +259,9 @@
         bind:isModalOpen
         bind:foodIntake
         bind:isAdding
-        on:edit={updateFoodIntake}
         on:add={addFoodIntake}
+        on:edit={updateFoodIntake}
+        on:delete={deleteFoodIntake}
     />
 </div>
 

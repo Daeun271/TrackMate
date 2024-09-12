@@ -21,6 +21,7 @@
 
     export let isExpanded = true;
     export let isLoading = false;
+    export let backgroundColor = '#007bff';
 </script>
 
 <button
@@ -28,6 +29,7 @@
     class:button-clicked={clicked}
     class:expanded={isExpanded}
     class:loading={isLoading}
+    style:background-color={backgroundColor}
     on:click={onClick}><slot></slot></button
 >
 
@@ -35,7 +37,6 @@
     .component-button {
         appearance: none;
 
-        background-color: #007bff;
         color: white;
 
         border: none;
