@@ -12,49 +12,43 @@
     export let imageUrl;
 </script>
 
-<div class="background">
-    <div class="empty-container">
-        <div class="empty-container-bg-container">
-            <div
-                class="empty-container-bg"
-                style="background:url({imageUrl}) center/cover no-repeat;"
-            ></div>
-        </div>
-        <div class="empty-content">
-            <p>{text1}</p>
-            <p>{text2}</p>
-            <svg
-                on:click={click}
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width="1"
-                stroke="currentColor"
-            >
-                <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
-                />
-            </svg>
-        </div>
+<div class="empty-container">
+    <div class="empty-container-bg-container">
+        <div
+            class="empty-container-bg"
+            style="background:url({imageUrl}) center/cover no-repeat;"
+        ></div>
+    </div>
+    <div class="empty-content">
+        <p>{text1}</p>
+        <p>{text2}</p>
+        <svg
+            on:click={click}
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke-width="1"
+            stroke="currentColor"
+        >
+            <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
+            />
+        </svg>
     </div>
 </div>
 
 <style>
-    .background {
-        display: flex;
-        flex-direction: column;
-        row-gap: 20px;
-        overflow-y: auto;
-        height: 100%;
-        padding: 20px;
-    }
-
     .empty-container {
         position: relative;
         margin-top: auto;
         margin-bottom: auto;
+
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+        height: 100%;
     }
 
     .empty-container-bg-container {

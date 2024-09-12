@@ -180,21 +180,21 @@
     }
 </script>
 
-<div class="background">
-    {#await foodIntakePromise}
-        <p>loading...</p>
-    {:then foods}
-        {#if !foods}
-            <EmptyPage
-                text1="No food intake found"
-                text2="Get started by adding a new food intake"
-                {imageUrl}
-                on:modalClick={() => {
-                    isAdding = true;
-                    isModalOpen = true;
-                }}
-            ></EmptyPage>
-        {:else}
+{#await foodIntakePromise}
+    <p>loading...</p>
+{:then foods}
+    {#if !foods}
+        <EmptyPage
+            text1="No food intake found"
+            text2="Get started by adding a new food intake"
+            {imageUrl}
+            on:modalClick={() => {
+                isAdding = true;
+                isModalOpen = true;
+            }}
+        ></EmptyPage>
+    {:else}
+        <div class="background">
             {#each Object.keys(foods).toSorted((a, b) => {
                 return new Date(b).getTime() - new Date(a).getTime();
             }) as date}
@@ -242,18 +242,18 @@
                     </svg>
                 </CircleButton>
             {/if}
-        {/if}
-    {/await}
+        </div>
+    {/if}
+{/await}
 
-    <Modal
-        bind:isModalOpen
-        bind:foodIntake
-        bind:isAdding
-        on:add={addFoodIntake}
-        on:edit={updateFoodIntake}
-        on:delete={deleteFoodIntake}
-    />
-</div>
+<Modal
+    bind:isModalOpen
+    bind:foodIntake
+    bind:isAdding
+    on:add={addFoodIntake}
+    on:edit={updateFoodIntake}
+    on:delete={deleteFoodIntake}
+/>
 
 <style>
     .background {
