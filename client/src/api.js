@@ -146,3 +146,44 @@ export function getFoodImageUrl(uid) {
         localStorage.getItem('sessionKey')
     );
 }
+
+export async function addExercise(name, type, date, duration, burnedCalories) {
+    await request('POST', 'user/exercises/create', {
+        name,
+        type,
+        date,
+        duration,
+        burned_calories: burnedCalories,
+    });
+}
+
+export async function getExercisesTotal(startDate, endDate) {
+    return await request('POST', 'user/exercises/get_exercises', {
+        start_date: startDate,
+        end_date: endDate,
+    });
+}
+
+export async function updateExercise(
+    uid,
+    name,
+    type,
+    date,
+    duration,
+    burnedCalories,
+) {
+    return await request('POST', 'user/exercises/update', {
+        uid,
+        name,
+        type,
+        date,
+        duration,
+        burned_calories: burnedCalories,
+    });
+}
+
+export async function deleteExercise(uid) {
+    await request('Delete', 'user/exercises/delete', {
+        uid,
+    });
+}
