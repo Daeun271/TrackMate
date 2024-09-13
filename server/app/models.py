@@ -22,6 +22,7 @@ class User(Base):
     
     water_intakes = relationship("WaterIntake", back_populates="user")
     food_intakes = relationship("FoodIntake", back_populates="user")
+    exercises = relationship("Exercise", back_populates="user")
     
 
 class Session(Base):

@@ -97,6 +97,10 @@ class ExerciseGetResponse(ExerciseBaseWithUid):
     pass
 
 
+class ExerciseForDateRangeResponse(BaseModel):
+    exercises: List[ExerciseGetResponse]
+
+
 class ExerciseUpdateRequest(ExerciseBaseWithUid):
     pass
 
