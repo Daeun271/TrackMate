@@ -22,7 +22,8 @@
     export let isExpanded = true;
     export let isLoading = false;
     export let backgroundColor = '#007bff';
-    export let bordered = false;
+    export let primaryBordered = false;
+    export let secondaryBordered = false;
 </script>
 
 <button
@@ -30,8 +31,9 @@
     class:button-clicked={clicked}
     class:expanded={isExpanded}
     class:loading={isLoading}
-    class:bordered
-    style:background-color={backgroundColor}
+    class:primary-border={primaryBordered}
+    class:secondary-border={secondaryBordered}
+    style="background-color: {backgroundColor}"
     on:click={onClick}><slot></slot></button
 >
 
@@ -40,7 +42,6 @@
         appearance: none;
 
         color: white;
-        background-color: #007bff;
 
         border: none;
         border-radius: 5px;
@@ -68,9 +69,13 @@
         pointer-events: none;
     }
 
-    .bordered {
+    .primary-border {
         border: 2px solid #007bff;
-        background-color: white;
         color: #007bff;
+    }
+
+    .secondary-border {
+        border: 2px solid #f50707;
+        color: #f50707;
     }
 </style>

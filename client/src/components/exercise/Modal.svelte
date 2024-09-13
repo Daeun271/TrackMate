@@ -20,68 +20,11 @@
             type: '',
             burned_calories: '',
             date: today,
-            time: '',
             duration: '',
-            img_src: '',
-            img_blob: null,
         };
     }
 
     exercise = getInitialInputs();
-
-    let imageInput;
-
-    async function onImageFileChanged(event) {
-        const file = event.target.files[0];
-
-        if (!file) {
-            return;
-        }
-
-        const image = new Image();
-        image.src = URL.createObjectURL(file);
-        await new Promise((resolve) => {
-            image.onload = () => resolve(image);
-        });
-
-        let width = image.width;
-        let height = image.height;
-
-        const MAX_SIZE = 600;
-
-        if (width > height) {
-            if (width > MAX_SIZE) {
-                height *= MAX_SIZE / width;
-                width = MAX_SIZE;
-            }
-        } else {
-            if (height > MAX_SIZE) {
-                width *= MAX_SIZE / height;
-                height = MAX_SIZE;
-            }
-        }
-
-        const canvas = document.createElement('canvas');
-        canvas.width = width;
-        canvas.height = height;
-
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(image, 0, 0, width, height);
-
-        const jpegBlob = await new Promise((resolve) => {
-            canvas.toBlob(
-                (blob) => {
-                    resolve(blob);
-                },
-                'image/jpeg',
-                0.8,
-            );
-        });
-
-        exercise.img_blob = jpegBlob;
-        const jpegUrl = URL.createObjectURL(jpegBlob);
-        exercise.img_src = jpegUrl;
-    }
 
     function handleMaxDate(event) {
         new Date(event.target.value) > new Date()
@@ -133,21 +76,6 @@
             }
         }
 
-        if (exercise.img_blob) {
-            const imageFile = new File([exercise.img_blob], 'file', {
-                type: 'image/jpeg',
-            });
-
-            try {
-                // upload image
-            } catch (error) {
-                errorMessage =
-                    'Failed to upload image. Please try again later.';
-                isLoading = false;
-                return;
-            }
-        }
-
         isLoading = false;
 
         if (isAdding) {
@@ -190,44 +118,6 @@
 >
     <div class="modal-wrapper">
         <div class="input-container">
-            <label for="image">Image</label>
-            <input
-                bind:this={imageInput}
-                on:change={onImageFileChanged}
-                type="file"
-                id="image"
-                name="image"
-                accept="image/*"
-                style="display:none;"
-            />
-            <div class="image-preview" on:click={() => imageInput.click()}>
-                {#if exercise.img_src}
-                    <img
-                        src={exercise.img_src}
-                        alt="selectedImage"
-                        style="cursor: pointer;"
-                    />
-                {:else}
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke-width="1.5"
-                        stroke="currentColor"
-                    >
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z"
-                        />
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z"
-                        />
-                    </svg>
-                {/if}
-            </div>
             <label for="name">Name<span class="required">*</span></label>
             <input
                 type="text"
@@ -271,9 +161,9 @@
             <div class="calories-container">
                 <label for="calories">Calories burned</label>
                 <Button
-                    backgroundColor="white"
-                    bordered={true}
+                    primaryBordered={true}
                     isExpanded={false}
+                    backgroundColor="white"
                 >
                     <span>Calculate</span>
                 </Button>
@@ -395,33 +285,6 @@
 
     input[type='date']::-webkit-date-and-time-value {
         text-align: left;
-    }
-
-    .image-preview {
-        align-self: center;
-        width: 60%;
-        aspect-ratio: 1/1;
-        border: 1px solid #ced4da;
-        border-radius: 5px;
-        outline: solid 2px #f8f8f8;
-        margin-bottom: 10px;
-
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-
-    .image-preview > img {
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
-    }
-
-    .image-preview > svg {
-        width: 50px;
-        height: 50px;
-        cursor: pointer;
-        color: #ced4da;
     }
 
     .input-container > select {

@@ -20,6 +20,7 @@
     }
 
     export let floated = false;
+    export let widthAndHeight = '45px';
 
     let isMobile = window.matchMedia('(max-width: 480px)').matches;
 </script>
@@ -28,6 +29,8 @@
     class:button-clicked={clicked}
     class:floating-button={floated}
     style={isMobile ? 'bottom: 90px;' : 'bottom: 20px;'}
+    style:width={widthAndHeight}
+    style:height={widthAndHeight}
     on:click={onClick}
 >
     <slot></slot>
@@ -44,8 +47,6 @@
         justify-content: center;
         align-items: center;
 
-        width: 45px;
-        height: 45px;
         padding: 0;
 
         border: none;
