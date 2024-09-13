@@ -144,7 +144,7 @@ def create_food_intake(
 
 
 @app.post("/user/food_intakes/get_food_intakes", response_model=schemas.FoodIntakeForDateRangeResponse)
-def get_food_intakes_by_user_id_and_date_range(food_intakes_request: schemas.FoodIntakeForDateRangeRequest, request: Request, db: Session = Depends(get_db)):
+def get_food_intakes_by_user_id_and_date_range(food_intakes_request: schemas.DateRangeRequest, request: Request, db: Session = Depends(get_db)):
     return crud.get_food_intakes_by_user_id_and_date_range(db, food_intakes_request=food_intakes_request, user_id=request.state.user_id)
 
 
@@ -201,3 +201,30 @@ def get_food_image(uid: str, request: Request):
         raise HTTPException(status_code=404, detail="Image not found")
     
     return FileResponse(image_path, media_type="image/jpeg")
+
+
+@app.post("/user/exercises/create", response_model=schemas.ExerciseCreateResponse)
+def create_exercise(
+    exercise: schemas.ExerciseCreateRequest, request: Request, db: Session = Depends(get_db)
+):
+    return crud.create_exercise(db=db, exercise=exercise, user_id=request.state.user_id)
+
+
+@app.post("/user/exercises/get_exercises", response_model=schemas.ExerciseForDateRangeResponse)
+def get_exercises_by_user_id_and_date_range(exercises_request: schemas.DateRangeRequest, request: Request, db: Session = Depends(get_db)):
+    return crud.get_exercises_by_user_id_and_date_range(db, exercises_request=exercises_request, user_id=request.state.user_id)
+
+
+@app.post("/user/exercises/update")
+def update_exercise(
+    exercise: schemas.ExerciseUpdateRequest, request: Request, db: Session = Depends(get_db)
+):
+    crud.update_exercise(db=db, exercise=exercise, user_id=request.state.user_id)
+    
+
+@app.delete("/user/exercises/delete")
+def delete_exercise(
+    exercise: schemas.ExerciseDeleteRequest, request: Request, db: Session = Depends(get_db)
+):
+    crud.delete_exercise(db=db, exercise=exercise, user_id=request.state.user_id)
+    

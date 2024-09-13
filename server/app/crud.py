@@ -70,7 +70,7 @@ def create_water_intake(db: Session, water_intake: schemas.WaterIntake, user_id:
     db.refresh(db_water_intake)
 
 
-def get_food_intakes_by_user_id_and_date_range(db: Session, food_intakes_request: schemas.FoodIntakeForDateRangeRequest, user_id: int):
+def get_food_intakes_by_user_id_and_date_range(db: Session, food_intakes_request: schemas.DateRangeRequest, user_id: int):
     return schemas.FoodIntakeForDateRangeResponse(
         foods=db.query(models.FoodIntake).filter(models.FoodIntake.user_id == user_id, models.FoodIntake.consumed_at >= food_intakes_request.start_date, models.FoodIntake.consumed_at < food_intakes_request.end_date).all()
     )
@@ -98,3 +98,35 @@ def update_food_intake(db: Session, food_intake: schemas.FoodIntakeUpdateRequest
 def delete_food_intake(db: Session, food_intake: schemas.FoodIntakeDeleteRequest, user_id: int):
     db.query(models.FoodIntake).filter(models.FoodIntake.user_id == user_id, models.FoodIntake.uid == food_intake.uid).delete()
     db.commit()
+    
+
+def get_exercises_by_user_id_and_date_range(db: Session, exercises_request: schemas.DateRangeRequest, user_id: int):
+    return schemas.ExerciseForDateRangeResponse(
+        exercises=db.query(models.Exercise).filter(models.Exercise.user_id == user_id, models.Exercise.date >= exercises_request.start_date, models.Exercise.date < exercises_request.end_date).all()
+    )
+    
+
+def create_exercise(db: Session, exercise: schemas.ExerciseCreateRequest, user_id: int):
+    db_exercise = models.Exercise(**exercise.model_dump(), user_id=user_id)
+    db.add(db_exercise)
+    db.commit()
+    db.refresh(db_exercise)
+    return schemas.ExerciseCreateResponse(uid=db_exercise.uid)
+
+
+def update_exercise(db: Session, exercise: schemas.ExerciseUpdateRequest, user_id: int):
+    db_exercise = db.query(models.Exercise).filter(models.Exercise.user_id == user_id, models.Exercise.uid == exercise.uid).first()
+    if db_exercise is None:
+        return None
+    db_exercise.name = exercise.name
+    db_exercise.type = exercise.type
+    db_exercise.date = exercise.date
+    db_exercise.duration = exercise.duration
+    db_exercise.burned_calories = exercise.burned_calories
+    db.commit()
+
+
+def delete_exercise(db: Session, exercise: schemas.ExerciseDeleteRequest, user_id: int):
+    db.query(models.Exercise).filter(models.Exercise.user_id == user_id, models.Exercise.uid == exercise.uid).delete()
+    db.commit()
+    

@@ -65,3 +65,24 @@ class FoodIntake(Base):
     user_id = Column(Integer, ForeignKey("users.id"))
 
     user = relationship("User", back_populates="food_intakes")
+    
+
+class WorkoutType(str, enum.Enum):
+    CARDIO = "CARDIO"
+    STRENGTH = "STRENGTH"
+    FLEXIBILITY = "FLEXIBILITY"
+
+
+class Exercise(Base):
+    __tablename__ = "exercises"
+
+    id = Column(Integer, primary_key=True)
+    uid = Column(String, default=lambda: str(uuid.uuid4()), unique=True, nullable=False, index=True)
+    name = Column(String, nullable=False)
+    type = Column(Enum(WorkoutType))
+    date = Column(Date, nullable=False)
+    duration = Column(Float, nullable=False)
+    burned_calories = Column(Float)
+    user_id = Column(Integer, ForeignKey("users.id"))
+
+    user = relationship("User", back_populates="exercises")

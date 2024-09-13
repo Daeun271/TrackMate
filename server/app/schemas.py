@@ -4,6 +4,7 @@ from datetime import datetime, date
 from typing import Optional, List
 from fastapi import HTTPException
 from .models import TimeCategory
+from .models import WorkoutType
 
 
 class WaterIntake(BaseModel):
@@ -22,7 +23,7 @@ class WaterIntakeTotalForDateResponse(BaseModel):
     total_volume: float
 
 
-class FoodIntakeUid(BaseModel):
+class ActivityUid(BaseModel):
     uid: str
 
 
@@ -40,15 +41,15 @@ class FoodIntakeCreateRequest(FoodIntakeBase):
     pass
 
 
-class FoodIntakeCreateResponse(FoodIntakeUid):
+class FoodIntakeCreateResponse(ActivityUid):
     pass
 
 
-class FoodIntakeBaseWithUid(FoodIntakeBase, FoodIntakeUid):
+class FoodIntakeBaseWithUid(FoodIntakeBase, ActivityUid):
     pass
 
 
-class FoodIntakeForDateRangeRequest(BaseModel):
+class DateRangeRequest(BaseModel):
     start_date: date
     end_date: date
 
@@ -65,7 +66,42 @@ class FoodIntakeUpdateRequest(FoodIntakeBaseWithUid):
     pass
 
 
-class FoodIntakeDeleteRequest(FoodIntakeUid):
+class FoodIntakeDeleteRequest(ActivityUid):
+    pass
+
+
+class ExerciseBase(BaseModel):
+    name: str
+    type: WorkoutType
+    date: date
+    duration: float
+    burned_calories: Optional[float] = None
+    
+    class Config:
+        from_attributes = True
+
+
+class ExerciseBaseWithUid(ExerciseBase, ActivityUid):
+    pass
+
+
+class ExerciseCreateRequest(ExerciseBase):
+    pass
+
+
+class ExerciseCreateResponse(ActivityUid):
+    pass
+
+
+class ExerciseGetResponse(ExerciseBaseWithUid):
+    pass
+
+
+class ExerciseUpdateRequest(ExerciseBaseWithUid):
+    pass
+
+
+class ExerciseDeleteRequest(ActivityUid):
     pass
 
 
