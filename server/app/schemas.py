@@ -4,7 +4,6 @@ from datetime import datetime, date
 from typing import Optional, List
 from fastapi import HTTPException
 from .models import TimeCategory
-from .models import WorkoutType
 
 
 class WaterIntake(BaseModel):
@@ -71,8 +70,7 @@ class FoodIntakeDeleteRequest(ActivityUid):
 
 
 class ExerciseBase(BaseModel):
-    name: str
-    type: WorkoutType
+    exercise_id: int
     date: date
     duration: float
     burned_calories: Optional[float] = None

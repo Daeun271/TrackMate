@@ -118,8 +118,7 @@ def update_exercise(db: Session, exercise: schemas.ExerciseUpdateRequest, user_i
     db_exercise = db.query(models.Exercise).filter(models.Exercise.user_id == user_id, models.Exercise.uid == exercise.uid).first()
     if db_exercise is None:
         return None
-    db_exercise.name = exercise.name
-    db_exercise.type = exercise.type
+    db_exercise.exercise_id = exercise.exercise_id
     db_exercise.date = exercise.date
     db_exercise.duration = exercise.duration
     db_exercise.burned_calories = exercise.burned_calories
