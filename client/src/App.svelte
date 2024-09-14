@@ -12,6 +12,9 @@
     import { user } from './user.js';
 
     let isMobile = window.matchMedia('(max-width: 480px)').matches;
+    window.matchMedia('(max-width: 480px)').addEventListener('change', (e) => {
+        isMobile = e.matches;
+    });
 </script>
 
 <div class="app">
