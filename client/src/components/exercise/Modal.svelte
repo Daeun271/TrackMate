@@ -4,6 +4,13 @@
     import Loader from '../Loader.svelte';
     import { formatDate } from '../pages/FoodIntake.svelte';
     import { createEventDispatcher } from 'svelte';
+    import {
+        activities,
+        categories,
+    } from '../../../../server/temp/activities.js';
+    import CaloriesCalculator from './CaloriesCalculator.svelte';
+
+    let isPopupOpen = false;
 
     export let isModalOpen = false;
     export let isAdding = true;
@@ -16,8 +23,8 @@
     function getInitialInputs() {
         return {
             uid: '',
-            name: '',
-            type: '',
+            category: '',
+            activity_id: '',
             burned_calories: '',
             date: today,
             duration: '',
@@ -36,13 +43,14 @@
     let errorMessage = '';
     let isLoading = false;
 
-    async function uploadFoodIntake() {
+    async function uploadExercise() {
         if (isLoading) return;
         isLoading = true;
 
         if (
-            exercise.name.trim() === '' ||
-            exercise.type.trim() === '' ||
+            exercise.category.trim() === '' ||
+            exercise.activity_id.trim() === '' ||
+            exercise.date.trim() === '' ||
             exercise.duration.trim() === ''
         ) {
             errorMessage = 'Please fill all required fields';
@@ -89,7 +97,7 @@
 
     let deleteErrorMessage = '';
 
-    async function removeFoodIntake() {
+    async function removeExercise() {
         if (isLoading) return;
         isLoading = true;
 
@@ -106,6 +114,10 @@
         dispatch('delete', exercise);
         isModalOpen = false;
     }
+
+    function calculateCalories() {
+        isPopupOpen = true;
+    }
 </script>
 
 <Modal
@@ -118,22 +130,40 @@
 >
     <div class="modal-wrapper">
         <div class="input-container">
-            <label for="name">Name<span class="required">*</span></label>
-            <input
-                type="text"
-                id="name"
-                name="name"
-                bind:value={exercise.name}
-            />
-            <label for="type">Workout type<span class="required">*</span></label
+            <label for="category">Category<span class="required">*</span></label
             >
-            <select id="type" name="type" bind:value={exercise.type}>
+            <select
+                id="category"
+                name="category"
+                bind:value={exercise.category}
+            >
                 <option hidden disabled selected value>
                     -- select an option --
                 </option>
-                <option value="CARDIO">Cardio</option>
-                <option value="STRENGTH">Strength</option>
-                <option value="FLEXIBILITY">Flexibility</option>
+                {#each Object.keys(categories) as category}
+                    <option value={category}>{category}</option>
+                {/each}
+            </select>
+            <label for="description"
+                >Activity<span class="required">*</span></label
+            >
+            <select
+                id="description"
+                name="description"
+                bind:value={exercise.activity_id}
+            >
+                <option hidden disabled selected value>
+                    -- select an option --
+                </option>
+                {#if exercise.category}
+                    {#each categories[exercise.category] as id}
+                        <option value={id}
+                            >{activities[id]['description']}</option
+                        >
+                    {/each}
+                {:else}
+                    <option value="">Please select a category first</option>
+                {/if}
             </select>
             <label for="date">Workout date<span class="required">*</span></label
             >
@@ -164,6 +194,7 @@
                     primaryBordered={true}
                     isExpanded={false}
                     backgroundColor="white"
+                    on:click={calculateCalories}
                 >
                     <span>Calculate</span>
                 </Button>
@@ -173,7 +204,7 @@
                 <Button
                     bind:isLoading
                     isExpanded={true}
-                    on:click={uploadFoodIntake}
+                    on:click={uploadExercise}
                 >
                     {#if isLoading}
                         <Loader></Loader>
@@ -186,7 +217,7 @@
                 <Button
                     bind:isLoading
                     isExpanded={true}
-                    on:click={uploadFoodIntake}
+                    on:click={uploadExercise}
                 >
                     {#if isLoading}
                         <Loader></Loader>
@@ -199,7 +230,7 @@
                     bind:isLoading
                     isExpanded={true}
                     backgroundColor="#f50707"
-                    on:click={removeFoodIntake}
+                    on:click={removeExercise}
                 >
                     {#if isLoading}
                         <Loader></Loader>
@@ -212,6 +243,8 @@
         </div>
     </div>
 </Modal>
+
+<CaloriesCalculator bind:isPopupOpen></CaloriesCalculator>
 
 <style>
     .modal-wrapper {

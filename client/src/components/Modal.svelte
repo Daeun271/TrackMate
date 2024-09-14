@@ -13,10 +13,15 @@
         isOpen = false;
         dispatch('close');
     }
+
+    export let isPopup = false;
 </script>
 
 {#if isOpen}
-    <div class="modal-container">
+    {#if isPopup}
+        <div class="pop-up-bg"></div>
+    {/if}
+    <div class={isPopup ? 'pop-up' : 'modal-container'}>
         <slot name="modal-background"></slot>
         <button class="modal-close" on:click={onClick}>
             <svg
@@ -55,6 +60,36 @@
         flex-direction: column;
 
         z-index: 1000;
+    }
+
+    .pop-up-bg {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100dvw;
+        height: 100dvh;
+        background-color: rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(5px);
+
+        z-index: 1500;
+    }
+
+    .pop-up {
+        position: fixed;
+        top: 25dvh;
+        left: 10dvw;
+        width: 80dvw;
+        height: 50dvh;
+        background-color: #fff;
+
+        display: flex;
+        flex-direction: column;
+
+        z-index: 2000;
+
+        border: 1px solid #8f8b8b;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
     }
 
     .modal-close {

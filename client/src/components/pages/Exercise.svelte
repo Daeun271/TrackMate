@@ -4,6 +4,11 @@
     import Modal from '../exercise/Modal.svelte';
     import CircleButton from '../CircleButton.svelte';
     import { formatDate } from './FoodIntake.svelte';
+    import {
+        activities,
+        categories,
+        categoryToColor,
+    } from '../../../../server/temp/activities.js';
 
     let today = formatDate(new Date());
 
@@ -17,60 +22,36 @@
     let exercises = [
         {
             uid: '1',
-            name: 'Running',
-            type: 'CARDIO',
-            burned_calories: '500',
+            category: 'Bicycling',
+            activity_id: '01003',
+            burned_calories: '200',
             date: '2021-09-01',
-            duration: '1 hour',
+            duration: '30',
         },
         {
             uid: '2',
-            name: 'Weightlifting',
-            type: 'STRENGTH',
-            burned_calories: '300',
+            category: 'Bicycling',
+            activity_id: '01004',
+            burned_calories: '150',
             date: '2021-09-01',
-            duration: '1 hour',
+            duration: '45',
         },
         {
             uid: '3',
-            name: 'Yoga',
-            type: 'FLEXIBILITY',
-            burned_calories: '200',
+            category: 'Bicycling',
+            activity_id: '01008',
+            burned_calories: '100',
             date: '2021-09-01',
-            duration: '1 hour',
-        },
-        {
-            uid: '4',
-            name: 'Running',
-            type: 'CARDIO',
-            burned_calories: '500',
-            date: '2021-09-01',
-            duration: '1 hour',
-        },
-        {
-            uid: '5',
-            name: 'Weightlifting',
-            type: 'STRENGTH',
-            burned_calories: '300',
-            date: '2021-09-01',
-            duration: '1 hour',
-        },
-        {
-            uid: '6',
-            name: 'Yoga',
-            type: 'FLEXIBILITY',
-            burned_calories: '200',
-            date: '2021-09-01',
-            duration: '1 hour',
+            duration: '60',
         },
     ];
 
     let exercise = {
         uid: '',
-        name: '',
-        type: '',
+        category: '',
+        activity_id: '',
         burned_calories: '',
-        date: '',
+        date: today,
         duration: '',
     };
 
@@ -135,10 +116,22 @@
                     </svg>
                 </div>
                 {#each exercises as exercise}
-                    <div class="exercise-card" data-type={exercise.type}>
+                    {@const activity = activities[exercise.activity_id]}
+                    {@const backgroundColor =
+                        categoryToColor[exercise.category] ?? '#e6f9f6'}
+                    <div
+                        class="exercise-card"
+                        style={`background-color: ${backgroundColor}`}
+                    >
                         <div class="exercise-card-content">
-                            <h3>{exercise.name}</h3>
-                            <p>{exercise.burned_calories} calories burned</p>
+                            <h3>
+                                {activity?.description ?? 'Unknown activity'}
+                            </h3>
+                            {#if exercise.burned_calories}
+                                <p>
+                                    {exercise.burned_calories} calories burned
+                                </p>
+                            {/if}
                             <p>{exercise.date}</p>
                             <p>{exercise.duration}</p>
                         </div>
@@ -239,21 +232,6 @@
         position: relative;
     }
 
-    .exercise-card[data-type='CARDIO'] {
-        border-color: #d1f7ff;
-        background-color: #e6f9ff;
-    }
-
-    .exercise-card[data-type='STRENGTH'] {
-        border-color: #f7d1f7;
-        background-color: #ffe6ff;
-    }
-
-    .exercise-card[data-type='FLEXIBILITY'] {
-        border-color: #f7f7d1;
-        background-color: #ffffe6;
-    }
-
     .exercise-card-content {
         display: flex;
         flex-direction: column;
@@ -270,7 +248,7 @@
 
     .exercise-card-actions {
         position: absolute;
-        top: 10px;
+        bottom: 10px;
         right: 15px;
     }
 
