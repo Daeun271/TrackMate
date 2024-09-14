@@ -70,7 +70,7 @@ class FoodIntakeDeleteRequest(ActivityUid):
 
 
 class ExerciseBase(BaseModel):
-    exercise_id: int
+    exercise_id: str
     date: date
     duration: float
     burned_calories: Optional[float] = None
