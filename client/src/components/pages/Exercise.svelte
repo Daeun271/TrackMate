@@ -24,9 +24,9 @@
             uid: '1',
             category: 'Bicycling',
             activity_id: '01003',
-            burned_calories: '200',
+            burned_calories: 0,
             date: '2021-09-01',
-            duration: '30',
+            duration: 30,
         },
         {
             uid: '2',
@@ -46,7 +46,7 @@
         },
     ];
 
-    let exercise = {
+    let activity = {
         uid: '',
         category: '',
         activity_id: '',
@@ -59,15 +59,24 @@
     let isAdding = true;
 
     function addExercise(event) {
+        // add exercise to database
         console.log('add exercise');
     }
 
     function updateExercise(event) {
+        // update exercise in database
         console.log('update exercise');
     }
 
     function deleteExercise(event) {
+        // delete exercise from database
         console.log('delete exercise');
+    }
+
+    function displayExercise(exercise) {
+        activity = exercise;
+        isAdding = false;
+        isModalOpen = true;
     }
 </script>
 
@@ -133,16 +142,13 @@
                                 </p>
                             {/if}
                             <p>{exercise.date}</p>
-                            <p>{exercise.duration}</p>
+                            <p>{exercise.duration} minutes</p>
                         </div>
                         <div class="exercise-card-actions">
                             <button
                                 class="icon-button"
-                                on:click={() => {
-                                    isAdding = false;
-                                    isModalOpen = true;
-                                    exercise = { ...exercise };
-                                }}>⚙️</button
+                                on:click={() => displayExercise(exercise)}
+                                >⚙️</button
                             >
                             <button
                                 class="icon-button"
@@ -159,7 +165,7 @@
 <Modal
     bind:isAdding
     bind:isModalOpen
-    bind:exercise
+    bind:exercise={activity}
     on:add={addExercise}
     on:edit={updateExercise}
     on:delete={deleteExercise}

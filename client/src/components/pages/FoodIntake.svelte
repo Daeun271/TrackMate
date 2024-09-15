@@ -186,7 +186,7 @@
     {#if !foods}
         <EmptyPage
             text1="No food intake found"
-            text2="Get started by recording your food intake"
+            text2="Get started by recoding your food intake"
             {imageUrl}
             on:modalClick={() => {
                 isAdding = true;

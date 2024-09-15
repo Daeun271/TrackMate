@@ -51,7 +51,7 @@
             exercise.category.trim() === '' ||
             exercise.activity_id.trim() === '' ||
             exercise.date.trim() === '' ||
-            exercise.duration.trim() === ''
+            Number(exercise.duration) === 0
         ) {
             errorMessage = 'Please fill all required fields';
             isLoading = false;
@@ -115,8 +115,33 @@
         isModalOpen = false;
     }
 
+    let activity = {
+        activity_id: '',
+        duration: '',
+    };
+
+    let caculateErrorMessage = '';
+
     function calculateCalories() {
+        if (
+            exercise.category.trim() === '' ||
+            exercise.activity_id.trim() === '' ||
+            Number(exercise.duration) === 0
+        ) {
+            caculateErrorMessage =
+                'Category, activity and duration of the workout are required';
+            return;
+        }
+
+        activity = {
+            activity_id: exercise.activity_id,
+            duration: exercise.duration,
+        };
         isPopupOpen = true;
+    }
+
+    function displayCalories(event) {
+        exercise.burned_calories = event.detail;
     }
 </script>
 
@@ -125,6 +150,7 @@
     on:close={() => {
         errorMessage = '';
         deleteErrorMessage = '';
+        caculateErrorMessage = '';
         exercise = getInitialInputs();
     }}
 >
@@ -176,10 +202,10 @@
                 bind:value={exercise.date}
             />
             <label for="duration"
-                >Workout duration<span class="required">*</span></label
+                >Workout duration (minutes)<span class="required">*</span
+                ></label
             >
             <input
-                style="margin-bottom: 20px;"
                 type="number"
                 pattern="[0-9]*"
                 id="duration"
@@ -188,16 +214,26 @@
                 oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/(\..*)\./g, '$1');"
                 bind:value={exercise.duration}
             />
-            <div class="calories-container">
-                <label for="calories">Calories burned</label>
-                <Button
-                    primaryBordered={true}
-                    isExpanded={false}
-                    backgroundColor="white"
-                    on:click={calculateCalories}
-                >
-                    <span>Calculate</span>
-                </Button>
+            <div class="calories-wrapper">
+                <p class="calories-span">Calories burned</p>
+                <div class="calories-container">
+                    <input
+                        type="number"
+                        pattern="[0-9]*"
+                        onkeypress="return event.charCode >= 48 && event.charCode <= 57"
+                        oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/(\..*)\./g, '$1');"
+                        bind:value={exercise.burned_calories}
+                    />
+                    <Button
+                        primaryBordered={true}
+                        isExpanded={false}
+                        backgroundColor="white"
+                        on:click={calculateCalories}
+                    >
+                        <span>Calculate</span>
+                    </Button>
+                </div>
+                <p class="error-message">{caculateErrorMessage}</p>
             </div>
 
             {#if isAdding}
@@ -244,7 +280,11 @@
     </div>
 </Modal>
 
-<CaloriesCalculator bind:isPopupOpen></CaloriesCalculator>
+<CaloriesCalculator
+    bind:isPopupOpen
+    bind:activity
+    on:calculated={displayCalories}
+></CaloriesCalculator>
 
 <style>
     .modal-wrapper {
@@ -345,10 +385,25 @@
         margin: 5px 0 5px 0;
     }
 
+    .calories-wrapper {
+        margin-bottom: 20px;
+    }
+
     .calories-container {
         display: flex;
         justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
+    }
+
+    .calories-span {
+        font-size: 20px;
+        margin: 10px 0 5px 0;
+        width: 100%;
+        text-align: left;
+        pointer-events: none;
+    }
+
+    .calories-container input {
+        width: 65%;
+        margin: 0;
     }
 </style>
