@@ -24,7 +24,7 @@
             uid: '1',
             category: 'Bicycling',
             activity_id: '01003',
-            burned_calories: 0,
+            burned_calories: 10.0,
             date: '2021-09-01',
             duration: 30,
         },
@@ -32,7 +32,7 @@
             uid: '2',
             category: 'Bicycling',
             activity_id: '01004',
-            burned_calories: '150',
+            burned_calories: '150.0',
             date: '2021-09-01',
             duration: '45',
         },
@@ -136,13 +136,15 @@
                             <h3>
                                 {activity?.description ?? 'Unknown activity'}
                             </h3>
-                            {#if exercise.burned_calories}
-                                <p>
-                                    {exercise.burned_calories} calories burned
-                                </p>
-                            {/if}
                             <p>{exercise.date}</p>
                             <p>{exercise.duration} minutes</p>
+                            {#if exercise.burned_calories}
+                                <p>
+                                    {Math.round(
+                                        Number(exercise.burned_calories),
+                                    )} calories burned
+                                </p>
+                            {/if}
                         </div>
                         <div class="exercise-card-actions">
                             <button

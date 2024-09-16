@@ -14,8 +14,9 @@
 
     let weight = '';
     $: met = activity.activity_id ? activities[activity.activity_id].met : 0;
-    $: calories =
-        (Number(weight) * met * 3.5 * Number(activity.duration)) / 200;
+    $: calories = Math.round(
+        (Number(weight) * met * 3.5 * Number(activity.duration)) / 200,
+    );
 
     let errorMessage = '';
 
