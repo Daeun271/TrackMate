@@ -148,6 +148,11 @@ def get_food_intakes_by_user_id_and_date_range(food_intakes_request: schemas.Dat
     return crud.get_food_intakes_by_user_id_and_date_range(db, food_intakes_request=food_intakes_request, user_id=request.state.user_id)
 
 
+@app.post("/user/food_intakes/search_food_intakes", response_model=schemas.FoodIntakeForDateRangeResponse)
+def search_food_intakes(food_intakes_request: schemas.FoodIntakeSearchRequest, request: Request, db: Session = Depends(get_db)):
+    return crud.get_food_intakes(db, food_intakes_request=food_intakes_request, user_id=request.state.user_id)
+
+
 @app.post("/user/food_intakes/update")
 def update_food_intake(
     food_intake: schemas.FoodIntakeUpdateRequest, request: Request, db: Session = Depends(get_db)

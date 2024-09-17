@@ -61,6 +61,10 @@ class FoodIntakeForDateRangeResponse(BaseModel):
     foods: List[FoodIntakeGetResponse]
 
 
+class FoodIntakeSearchRequest(BaseModel):
+    search_start_date: date
+
+
 class FoodIntakeUpdateRequest(FoodIntakeBaseWithUid):
     pass
 
