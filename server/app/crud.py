@@ -119,6 +119,7 @@ def update_exercise(db: Session, exercise: schemas.ExerciseUpdateRequest, user_i
     if db_exercise is None:
         return None
     db_exercise.exercise_id = exercise.exercise_id
+    db_exercise.category = exercise.category
     db_exercise.date = exercise.date
     db_exercise.duration = exercise.duration
     db_exercise.burned_calories = exercise.burned_calories

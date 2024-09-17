@@ -74,6 +74,7 @@ class Exercise(Base):
     id = Column(Integer, primary_key=True)
     uid = Column(String, default=lambda: str(uuid.uuid4()), unique=True, nullable=False, index=True)
     exercise_id = Column(String, nullable=False)
+    category = Column(String, nullable=False)
     date = Column(Date, nullable=False)
     duration = Column(Float, nullable=False)
     burned_calories = Column(Float)

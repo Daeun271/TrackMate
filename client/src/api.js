@@ -147,10 +147,16 @@ export function getFoodImageUrl(uid) {
     );
 }
 
-export async function addExercise(name, type, date, duration, burnedCalories) {
-    await request('POST', 'user/exercises/create', {
-        name,
-        type,
+export async function addExercise(
+    exerciseId,
+    category,
+    date,
+    duration,
+    burnedCalories,
+) {
+    return await request('POST', 'user/exercises/create', {
+        exercise_id: exerciseId,
+        category,
         date,
         duration,
         burned_calories: burnedCalories,
@@ -166,16 +172,16 @@ export async function getExercisesTotal(startDate, endDate) {
 
 export async function updateExercise(
     uid,
-    name,
-    type,
+    exerciseId,
+    category,
     date,
     duration,
     burnedCalories,
 ) {
     return await request('POST', 'user/exercises/update', {
         uid,
-        name,
-        type,
+        exercise_id: exerciseId,
+        category,
         date,
         duration,
         burned_calories: burnedCalories,

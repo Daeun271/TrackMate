@@ -29,9 +29,8 @@
     let foodIntakePromise = getFoodIntakes();
 
     async function getFoodIntakes() {
-        const today = new Date();
-        const tomorrow = new Date(today.setDate(today.getDate() + 1));
-        const lastWeek = new Date(today.setDate(today.getDate() - 7));
+        const tomorrow = new Date(new Date().setDate(new Date().getDate() + 1));
+        const lastWeek = new Date(new Date().setDate(new Date().getDate() - 6));
         const foodIntakeRes = await getFoodIntakesTotal(
             formatDate(lastWeek),
             formatDate(tomorrow),

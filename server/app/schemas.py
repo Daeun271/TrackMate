@@ -71,6 +71,7 @@ class FoodIntakeDeleteRequest(ActivityUid):
 
 class ExerciseBase(BaseModel):
     exercise_id: str
+    category: str
     date: date
     duration: float
     burned_calories: Optional[float] = None

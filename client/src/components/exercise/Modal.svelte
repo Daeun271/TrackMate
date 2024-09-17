@@ -9,6 +9,7 @@
         categories,
     } from '../../../../server/temp/activities.js';
     import CaloriesCalculator from './CaloriesCalculator.svelte';
+    import { addExercise, updateExercise, deleteExercise } from '../../api';
 
     let isPopupOpen = false;
 
@@ -24,7 +25,7 @@
         return {
             uid: '',
             category: '',
-            activity_id: '',
+            exercise_id: '',
             burned_calories: '',
             date: today,
             duration: '',
@@ -49,7 +50,7 @@
 
         if (
             exercise.category.trim() === '' ||
-            exercise.activity_id.trim() === '' ||
+            exercise.exercise_id.trim() === '' ||
             exercise.date.trim() === '' ||
             Number(exercise.duration) === 0
         ) {
@@ -66,7 +67,15 @@
 
         if (isAdding) {
             try {
-                //add exercise
+                const result = await addExercise(
+                    exercise.exercise_id,
+                    exercise.category,
+                    exercise.date,
+                    Number(exercise.duration),
+                    Number(exercise.burned_calories) || 0,
+                );
+
+                exercise.uid = result.uid;
             } catch (error) {
                 errorMessage =
                     'Failed to add the exercise. Please try again later.';
@@ -75,7 +84,14 @@
             }
         } else {
             try {
-                // edit exercise
+                await updateExercise(
+                    exercise.uid,
+                    exercise.exercise_id,
+                    exercise.category,
+                    exercise.date,
+                    Number(exercise.duration),
+                    Number(exercise.burned_calories) || 0,
+                );
             } catch (error) {
                 errorMessage =
                     'Failed to edit the exercise. Please try again later.';
@@ -102,7 +118,7 @@
         isLoading = true;
 
         try {
-            // delete exercise
+            await deleteExercise(exercise.uid);
         } catch (error) {
             deleteErrorMessage =
                 'Failed to delete the exercise. Please try again later.';
@@ -116,7 +132,7 @@
     }
 
     let activity = {
-        activity_id: '',
+        exercise_id: '',
         duration: '',
     };
 
@@ -125,7 +141,7 @@
     function calculateCalories() {
         if (
             exercise.category.trim() === '' ||
-            exercise.activity_id.trim() === '' ||
+            exercise.exercise_id.trim() === '' ||
             Number(exercise.duration) === 0
         ) {
             caculateErrorMessage =
@@ -134,7 +150,7 @@
         }
 
         activity = {
-            activity_id: exercise.activity_id,
+            exercise_id: exercise.exercise_id,
             duration: exercise.duration,
         };
         isPopupOpen = true;
@@ -176,12 +192,14 @@
             <select
                 id="description"
                 name="description"
-                bind:value={exercise.activity_id}
+                bind:value={exercise.exercise_id}
             >
-                <option hidden disabled selected value>
-                    -- select an option --
-                </option>
                 {#if exercise.category}
+                    {#if !exercise.exercise_id}
+                        <option hidden disabled selected value>
+                            -- select an option --
+                        </option>
+                    {/if}
                     {#each categories[exercise.category] as id}
                         <option value={id}
                             >{activities[id]['description']}</option

@@ -1,77 +1,195 @@
 <script>
-    import EmptyPage from '../EmptyPage.svelte';
-    import imageUrl from '../../assets/icons/exercise-routine.png?url';
     import Modal from '../exercise/Modal.svelte';
     import CircleButton from '../CircleButton.svelte';
     import { formatDate } from './FoodIntake.svelte';
     import {
         activities,
-        categories,
         categoryToColor,
     } from '../../../../server/temp/activities.js';
+    import { getExercisesTotal, deleteExercise } from '../../api.js';
 
     let today = formatDate(new Date());
+    let date = today;
 
     function handleMaxDate(event) {
         new Date(event.target.value) > new Date()
             ? (event.target.value = today)
             : event.target.value;
-        //exercise.date = event.target.value;
+        date = event.target.value;
     }
 
-    let exercises = [
-        {
-            uid: '1',
-            category: 'Bicycling',
-            activity_id: '01003',
-            burned_calories: 10.0,
-            date: '2021-09-01',
-            duration: 30,
-        },
-        {
-            uid: '2',
-            category: 'Bicycling',
-            activity_id: '01004',
-            burned_calories: '150.0',
-            date: '2021-09-01',
-            duration: '45',
-        },
-        {
-            uid: '3',
-            category: 'Bicycling',
-            activity_id: '01008',
-            burned_calories: '100',
-            date: '2021-09-01',
-            duration: '60',
-        },
-    ];
+    async function showYesterday() {
+        const newDate = formatDate(
+            new Date(new Date(date).setDate(new Date(date).getDate() - 1)),
+        );
 
-    let activity = {
-        uid: '',
-        category: '',
-        activity_id: '',
-        burned_calories: '',
-        date: today,
-        duration: '',
-    };
+        let exercises = await exercisePromise;
+
+        if (!(newDate in exercises)) {
+            appendExercises(exercises, newDate);
+        }
+
+        date = newDate;
+    }
+
+    function showTomorrow() {
+        const newDate = formatDate(
+            new Date(new Date(date).setDate(new Date(date).getDate() + 1)),
+        );
+
+        if (newDate <= today) {
+            date = newDate;
+        }
+    }
+
+    let exercisePromise = getExercises();
+
+    async function getExercises() {
+        const today = formatDate(new Date());
+        const tomorrow = formatDate(
+            new Date(new Date().setDate(new Date().getDate() + 1)),
+        );
+        const exerciseRes = await getExercisesTotal(today, tomorrow);
+
+        const exercises = {};
+        exercises[today] = [];
+
+        if (exerciseRes.exercises.length !== 0) {
+            for (let i = 0; i < exerciseRes.exercises.length; i++) {
+                const exercise = exerciseRes.exercises[i];
+                exercises[today].unshift(exercise);
+            }
+        }
+
+        return exercises;
+    }
+
+    async function appendExercises(exercises, date) {
+        const tomorrow = formatDate(
+            new Date(new Date(date).setDate(new Date(date).getDate() + 1)),
+        );
+        const exerciseRes = await getExercisesTotal(date, tomorrow);
+
+        exercises[date] = [];
+
+        if (exerciseRes.exercises.length !== 0) {
+            for (let i = 0; i < exerciseRes.exercises.length; i++) {
+                const exercise = exerciseRes.exercises[i];
+                exercises[date].unshift(exercise);
+            }
+        }
+
+        exercisePromise = Promise.resolve(exercises);
+    }
 
     let isModalOpen = false;
     let isAdding = true;
 
-    function addExercise(event) {
-        // add exercise to database
-        console.log('add exercise');
+    async function addExercise(event) {
+        let exercises = await exercisePromise;
+
+        const exercise = {
+            uid: event.detail.uid,
+            category: event.detail.category,
+            exercise_id: event.detail.exercise_id,
+            date: event.detail.date,
+            duration: event.detail.duration,
+            burned_calories: event.detail.burned_calories || null,
+        };
+
+        if (exercises) {
+            if (exercise.date in exercises) {
+                exercises[exercise.date].unshift(exercise);
+            } else {
+                exercises[exercise.date] = [exercise];
+            }
+        } else {
+            exercises = { [exercise.date]: [exercise] };
+        }
+
+        exercisePromise = Promise.resolve(exercises);
     }
 
-    function updateExercise(event) {
-        // update exercise in database
-        console.log('update exercise');
+    async function updateExercise(event) {
+        let exercises = await exercisePromise;
+
+        const newExercise = {
+            uid: event.detail.uid,
+            category: event.detail.category,
+            exercise_id: event.detail.exercise_id,
+            date: event.detail.date,
+            duration: event.detail.duration,
+            burned_calories: event.detail.burned_calories || null,
+        };
+
+        for (const date in exercises) {
+            let oldExercise = exercises[date].find(
+                (exercise) => exercise.uid === newExercise.uid,
+            );
+
+            if (oldExercise) {
+                const index = exercises[date].indexOf(oldExercise);
+                exercises[date].splice(index, 1);
+                if (exercises[date].length === 0) {
+                    delete exercises[date];
+                }
+
+                if (newExercise.date in exercises) {
+                    exercises[newExercise.date].unshift(newExercise);
+                } else {
+                    exercises[newExercise.date] = [newExercise];
+                }
+
+                break;
+            }
+        }
+
+        exercisePromise = Promise.resolve(exercises);
     }
 
-    function deleteExercise(event) {
-        // delete exercise from database
-        console.log('delete exercise');
+    async function removeExerciseImmediately(exercise) {
+        await deleteExercise(exercise.uid);
+
+        let exercises = await exercisePromise;
+
+        let oldExercise = exercises[exercise.date].find(
+            (ex) => ex.uid === exercise.uid,
+        );
+
+        if (oldExercise) {
+            const index = exercises[exercise.date].indexOf(oldExercise);
+            exercises[exercise.date].splice(index, 1);
+            if (exercises[exercise.date].length === 0) {
+                delete exercises[exercise.date];
+            }
+        }
+
+        exercisePromise = Promise.resolve(exercises);
     }
+
+    async function removeExercise(event) {
+        let exercises = await exercisePromise;
+
+        for (const date in exercises) {
+            let exercise = exercises[date].find(
+                (exercise) => exercise.uid === event.detail.uid,
+            );
+
+            if (exercise) {
+                const index = exercises[date].indexOf(exercise);
+                exercises[date].splice(index, 1);
+                if (exercises[date].length === 0) {
+                    delete exercises[date];
+                }
+
+                break;
+            }
+        }
+
+        exercisePromise = Promise.resolve(exercises);
+    }
+
+    let activity = null;
 
     function displayExercise(exercise) {
         activity = exercise;
@@ -80,27 +198,23 @@
     }
 </script>
 
-{#if exercises.length === 0}
-    <EmptyPage
-        text1="No exercises found"
-        text2="Get started by tracking your exercise"
-        {imageUrl}
-        on:modalClick={() => {
-            isAdding = true;
-            isModalOpen = true;
-        }}
-    ></EmptyPage>
-{:else}
+{#await exercisePromise}
+    <p>loading...</p>
+{:then exercises}
     <div class="bg">
         <div class="date-header">
-            <CircleButton widthAndHeight="25px">&lt</CircleButton>
+            <CircleButton on:click={showYesterday} widthAndHeight="25px"
+                >&lt</CircleButton
+            >
             <input
                 type="date"
-                value={today}
+                bind:value={date}
                 max={today}
                 on:change={handleMaxDate}
             />
-            <CircleButton widthAndHeight="25px">&gt</CircleButton>
+            <CircleButton on:click={showTomorrow} widthAndHeight="25px"
+                >&gt</CircleButton
+            >
         </div>
         <div class="exercise-list">
             <div class="exercise-card-wrapper">
@@ -108,6 +222,9 @@
                     <p>Click the button below to add a new exercise</p>
                     <svg
                         on:click={() => {
+                            activity = {
+                                date: date,
+                            };
                             isAdding = true;
                             isModalOpen = true;
                         }}
@@ -124,45 +241,51 @@
                         />
                     </svg>
                 </div>
-                {#each exercises as exercise}
-                    {@const activity = activities[exercise.activity_id]}
-                    {@const backgroundColor =
-                        categoryToColor[exercise.category] ?? '#e6f9f6'}
-                    <div
-                        class="exercise-card"
-                        style={`background-color: ${backgroundColor}`}
-                    >
-                        <div class="exercise-card-content">
-                            <h3>
-                                {activity?.description ?? 'Unknown activity'}
-                            </h3>
-                            <p>{exercise.date}</p>
-                            <p>{exercise.duration} minutes</p>
-                            {#if exercise.burned_calories}
+                {#if date in exercises}
+                    {#each exercises[date] as exercise}
+                        {@const activity = activities[exercise.exercise_id]}
+                        {@const backgroundColor =
+                            categoryToColor[exercise.category] ?? '#e6f9f6'}
+                        <div
+                            class="exercise-card"
+                            style={`background-color: ${backgroundColor}`}
+                        >
+                            <div class="exercise-card-content">
+                                <h3>
+                                    {activity?.description ??
+                                        'Unknown activity'}
+                                </h3>
                                 <p>
-                                    {Math.round(
-                                        Number(exercise.burned_calories),
-                                    )} calories burned
+                                    {Math.round(Number(exercise.duration))} minutes
                                 </p>
-                            {/if}
+                                {#if exercise.burned_calories}
+                                    <p>
+                                        {Math.round(
+                                            Number(exercise.burned_calories),
+                                        )} calories burned
+                                    </p>
+                                {/if}
+                            </div>
+                            <div class="exercise-card-actions">
+                                <button
+                                    class="icon-button"
+                                    on:click={() => displayExercise(exercise)}
+                                    >⚙️</button
+                                >
+                                <button
+                                    class="icon-button"
+                                    on:click={() =>
+                                        removeExerciseImmediately(exercise)}
+                                    >🚮</button
+                                >
+                            </div>
                         </div>
-                        <div class="exercise-card-actions">
-                            <button
-                                class="icon-button"
-                                on:click={() => displayExercise(exercise)}
-                                >⚙️</button
-                            >
-                            <button
-                                class="icon-button"
-                                on:click={deleteExercise}>🚮</button
-                            >
-                        </div>
-                    </div>
-                {/each}
+                    {/each}
+                {/if}
             </div>
         </div>
     </div>
-{/if}
+{/await}
 
 <Modal
     bind:isAdding
@@ -170,7 +293,7 @@
     bind:exercise={activity}
     on:add={addExercise}
     on:edit={updateExercise}
-    on:delete={deleteExercise}
+    on:delete={removeExercise}
 ></Modal>
 
 <style>

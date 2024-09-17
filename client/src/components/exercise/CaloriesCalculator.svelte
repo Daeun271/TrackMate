@@ -8,12 +8,12 @@
 
     export let isPopupOpen = false;
     export let activity = {
-        activity_id: '',
+        exercise_id: '',
         duration: '',
     };
 
     let weight = '';
-    $: met = activity.activity_id ? activities[activity.activity_id].met : 0;
+    $: met = activity.exercise_id ? activities[activity.exercise_id].met : 0;
     $: calories = Math.round(
         (Number(weight) * met * 3.5 * Number(activity.duration)) / 200,
     );
