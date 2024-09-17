@@ -24,6 +24,8 @@ class User(Base):
     food_intakes = relationship("FoodIntake", back_populates="user")
     exercises = relationship("Exercise", back_populates="user")
     
+    weight = Column(Float)
+    
 
 class Session(Base):
     __tablename__ = "sessions"

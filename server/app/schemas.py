@@ -153,3 +153,7 @@ class UserSettingsShareStatus(BaseModel):
 
 class UserSettingsPhoto(BaseModel):
     photo: bytes
+    
+
+class UserWeight(BaseModel):
+    weight: float

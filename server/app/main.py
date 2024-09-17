@@ -228,3 +228,21 @@ def delete_exercise(
 ):
     crud.delete_exercise(db=db, exercise=exercise, user_id=request.state.user_id)
     
+
+@app.post("/user/weight/create")
+def create_user_weight(
+    weight: schemas.UserWeight, request: Request, db: Session = Depends(get_db)
+):
+    crud.create_user_weight(db=db, weight=weight, user_id=request.state.user_id)
+    
+
+@app.get("/user/weight/get", response_model=schemas.UserWeight)
+def get_user_weight(request: Request, db: Session = Depends(get_db)):
+    return crud.get_user_weight(db=db, user_id=request.state.user_id)
+
+
+@app.post("/user/weight/update")
+def update_user_weight(
+    weight: schemas.UserWeight, request: Request, db: Session = Depends(get_db)
+):
+    crud.update_user_weight(db=db, weight=weight, user_id=request.state.user_id)
