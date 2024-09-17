@@ -169,6 +169,7 @@
         }
 
         isModalOpen = false;
+        foodIntake = getInitialInputs();
     }
 
     let deleteErrorMessage = '';
