@@ -9,7 +9,13 @@
         categories,
     } from '../../../../server/temp/activities.js';
     import CaloriesCalculator from './CaloriesCalculator.svelte';
-    import { addExercise, updateExercise, deleteExercise } from '../../api';
+    import {
+        addExercise,
+        updateExercise,
+        deleteExercise,
+        getUserWeight,
+        uploadUserWeight,
+    } from '../../api';
 
     let isPopupOpen = false;
 
@@ -137,8 +143,10 @@
     };
 
     let caculateErrorMessage = '';
+    let userWeight = 0;
+    let oldWeight = 0;
 
-    function calculateCalories() {
+    async function calculateCalories() {
         if (
             exercise.category.trim() === '' ||
             exercise.exercise_id.trim() === '' ||
@@ -149,6 +157,9 @@
             return;
         }
 
+        userWeight = await getUserWeight();
+        oldWeight = userWeight;
+
         activity = {
             exercise_id: exercise.exercise_id,
             duration: exercise.duration,
@@ -156,7 +167,12 @@
         isPopupOpen = true;
     }
 
-    function displayCalories(event) {
+    async function displayCalories(event) {
+        if (oldWeight !== userWeight) {
+            await uploadUserWeight(Number(userWeight));
+            oldWeight = userWeight;
+        }
+
         exercise.burned_calories = event.detail;
     }
 </script>
@@ -301,6 +317,7 @@
 <CaloriesCalculator
     bind:isPopupOpen
     bind:activity
+    bind:userWeight
     on:calculated={displayCalories}
 ></CaloriesCalculator>
 

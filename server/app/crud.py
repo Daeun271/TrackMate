@@ -137,3 +137,10 @@ def upload_user_weight(db: Session, weight: schemas.UserWeight, user_id: int):
         return
     db_user.weight = weight.weight
     db.commit()
+
+
+def get_user_weight(db: Session, user_id: int):
+    db_user = db.query(models.User).filter(models.User.id == user_id).first()
+    if db_user is None:
+        return None
+    return db_user.weight

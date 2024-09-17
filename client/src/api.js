@@ -194,4 +194,12 @@ export async function deleteExercise(uid) {
     });
 }
 
-export async function addU
+export async function uploadUserWeight(weight) {
+    await request('POST', 'user/weight/upload', {
+        weight,
+    });
+}
+
+export async function getUserWeight() {
+    return await request('GET', 'user/weight/get');
+}

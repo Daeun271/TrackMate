@@ -230,12 +230,12 @@ def delete_exercise(
     
 
 @app.post("/user/weight/upload")
-def create_user_weight(
+def upload_user_weight(
     weight: schemas.UserWeight, request: Request, db: Session = Depends(get_db)
 ):
-    crud.create_user_weight(db=db, weight=weight, user_id=request.state.user_id)
+    crud.upload_user_weight(db=db, weight=weight, user_id=request.state.user_id)
     
 
-@app.get("/user/weight/get", response_model=schemas.UserWeight)
-def get_user_weight(request: Request, db: Session = Depends(get_db)):
+@app.get("/user/weight/get")
+def get_user_weight(request: Request, db: Session = Depends(get_db)) -> Optional[float]:
     return crud.get_user_weight(db=db, user_id=request.state.user_id)

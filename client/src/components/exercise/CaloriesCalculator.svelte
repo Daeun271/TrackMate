@@ -11,17 +11,17 @@
         exercise_id: '',
         duration: '',
     };
+    export let userWeight = 0;
 
-    let weight = '';
     $: met = activity.exercise_id ? activities[activity.exercise_id].met : 0;
     $: calories = Math.round(
-        (Number(weight) * met * 3.5 * Number(activity.duration)) / 200,
+        (Number(userWeight) * met * 3.5 * Number(activity.duration)) / 200,
     );
 
     let errorMessage = '';
 
-    function saveCalories() {
-        if (Number(weight) === 0) {
+    async function saveCalories() {
+        if (Number(userWeight) === 0) {
             errorMessage = 'Please enter your weight';
             return;
         }
@@ -50,7 +50,7 @@
                 name="weight"
                 onkeypress="return event.charCode >= 48 && event.charCode <= 57"
                 oninput="this.value = this.value.replace(/[^0-9]/g, '').replace(/(\..*)\./g, '$1');"
-                bind:value={weight}
+                bind:value={userWeight}
             />
             <label for="calories">Calories burned</label>
             <input
