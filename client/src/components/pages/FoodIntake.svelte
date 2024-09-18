@@ -19,28 +19,31 @@
 <script>
     import Modal from '../food_intakes/Modal.svelte';
     import CircleButton from '../CircleButton.svelte';
-    import { getFoodIntakesTotal, getFoodImageUrl } from '../../api';
+    import { getFoodImageUrl, searchFoodIntakes } from '../../api';
     import EmptyPage from '../EmptyPage.svelte';
     import imageUrl from '../../assets/icons/vegan-food.png?url';
+    import { onMount } from 'svelte';
 
     let isModalOpen = false;
     let isAdding = true;
 
-    let foodIntakePromise = getFoodIntakes();
+    let foodDateList = [];
+    let loading = false;
 
-    async function getFoodIntakes() {
-        const tomorrow = new Date(new Date().setDate(new Date().getDate() + 1));
-        const lastWeek = new Date(new Date().setDate(new Date().getDate() - 6));
-        const foodIntakeRes = await getFoodIntakesTotal(
-            formatDate(lastWeek),
-            formatDate(tomorrow),
+    onMount(async () => {
+        if (loading) return;
+
+        loading = true;
+
+        const searchDate = new Date(
+            new Date().setDate(new Date().getDate() + 3),
         );
+        const foodIntakeRes = await searchFoodIntakes(formatDate(searchDate));
 
         if (foodIntakeRes.foods.length === 0) {
-            return null;
+            loading = false;
+            return;
         }
-
-        const foods = {};
 
         for (let i = 0; i < foodIntakeRes.foods.length; i++) {
             const food = foodIntakeRes.foods[i];
@@ -54,52 +57,41 @@
             food.priority =
                 timeCategoryPriorities[food.time_category] ?? Infinity;
 
-            if (!(food.consumed_at in foods)) {
-                foods[food.consumed_at] = [food];
-            } else {
-                foods[food.consumed_at].push(food);
+            let found = false;
+
+            for (let j = 0; j < foodDateList.length; j++) {
+                if (foodDateList[j].date === food.consumed_at) {
+                    for (let k = 0; k < foodDateList[j].foods.length; k++) {
+                        if (food.priority < foodDateList[j].foods[k].priority) {
+                            foodDateList[j].foods.splice(k, 0, food);
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if (!found) {
+                        foodDateList[j].foods.push(food);
+                        found = true;
+                    }
+                }
+            }
+
+            if (!found) {
+                foodDateList.push({
+                    date: food.consumed_at,
+                    foods: [food],
+                });
             }
         }
 
-        for (const key in foods) {
-            foods[key] = foods[key].sort((a, b) => a.priority - b.priority);
-        }
+        foodDateList = foodDateList.toSorted(
+            (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
+        );
 
-        return foods;
-    }
+        loading = false;
+    });
 
-    async function addFoodIntake(event) {
-        let foods = await foodIntakePromise;
-
-        const food = {
-            calories: Number(event.detail.calories),
-            name: event.detail.name,
-            consumed_at: event.detail.consumed_at,
-            time_category: event.detail.time_category || null,
-            has_image: event.detail.img_src !== '',
-            img_src: event.detail.img_src || null,
-            priority:
-                timeCategoryPriorities[event.detail.time_category] ?? Infinity,
-            uid: event.detail.uid,
-        };
-
-        if (foods) {
-            if (food.consumed_at in foods) {
-                foods[food.consumed_at].push(food);
-                foods[food.consumed_at] = foods[food.consumed_at].sort(
-                    (a, b) => a.priority - b.priority,
-                );
-            } else {
-                foods[food.consumed_at] = [food];
-            }
-        } else {
-            foods = {
-                [food.consumed_at]: [food],
-            };
-        }
-
-        foodIntakePromise = Promise.resolve(foods);
-    }
+    function addFoodIntake(event) {}
 
     let foodIntake = null;
 
@@ -109,80 +101,30 @@
         isModalOpen = true;
     }
 
-    async function updateFoodIntake(event) {
-        let foods = await foodIntakePromise;
-
-        const newFoodIntake = {
-            calories: Number(event.detail.calories),
-            name: event.detail.name,
-            consumed_at: event.detail.consumed_at,
-            time_category: event.detail.time_category || null,
-            has_image: event.detail.img_src !== '',
-            img_src: event.detail.img_src || null,
-            priority:
-                timeCategoryPriorities[event.detail.time_category] ?? Infinity,
-            uid: event.detail.uid,
-        };
-
-        if (foods) {
-            for (const date in foods) {
-                let oldFoodIntake = foods[date].find(
-                    (food) => food.uid === newFoodIntake.uid,
-                );
-
-                if (oldFoodIntake) {
-                    const index = foods[date].indexOf(oldFoodIntake);
-                    foods[date].splice(index, 1);
-                    if (foods[date].length === 0) {
-                        delete foods[date];
-                    }
-
-                    if (newFoodIntake.consumed_at in foods) {
-                        foods[newFoodIntake.consumed_at].push(newFoodIntake);
-                        foods[newFoodIntake.consumed_at] = foods[
-                            newFoodIntake.consumed_at
-                        ].sort((a, b) => a.priority - b.priority);
-                    } else {
-                        foods[newFoodIntake.consumed_at] = [newFoodIntake];
-                    }
-
-                    break;
-                }
-            }
-        }
-
-        foodIntakePromise = Promise.resolve(foods);
+    function updateFoodIntake(event) {
+        console.log(event.detail);
     }
 
-    async function deleteFoodIntake(event) {
-        let foods = await foodIntakePromise;
+    function deleteFoodIntake(event) {
+        console.log(event.detail);
+    }
 
-        if (foods) {
-            for (const date in foods) {
-                let foodIntake = foods[date].find(
-                    (food) => food.uid === event.detail.uid,
-                );
+    let scrollDiv;
 
-                if (foodIntake) {
-                    const index = foods[date].indexOf(foodIntake);
-                    foods[date].splice(index, 1);
-                    if (foods[date].length === 0) {
-                        delete foods[date];
-                    }
-
-                    break;
-                }
-            }
+    function loadData(event) {
+        if (
+            scrollDiv.scrollHeight - scrollDiv.scrollTop ===
+            scrollDiv.clientHeight
+        ) {
+            console.log('loading more data');
         }
-
-        foodIntakePromise = Promise.resolve(foods);
     }
 </script>
 
-{#await foodIntakePromise}
-    <p>loading...</p>
-{:then foods}
-    {#if !foods}
+{#if foodDateList.length === 0}
+    {#if loading}
+        <div>Loading...</div>
+    {:else}
         <EmptyPage
             text1="No food intake found"
             text2="Get started by recoding your food intake"
@@ -192,58 +134,59 @@
                 isModalOpen = true;
             }}
         ></EmptyPage>
-    {:else}
-        <div class="background">
-            {#each Object.keys(foods).toSorted((a, b) => {
-                return new Date(b).getTime() - new Date(a).getTime();
-            }) as date}
-                <h1>{date}</h1>
-                <div class="foodintake-wrapper">
-                    {#each foods[date] as food}
-                        {#if food.img_src === null}
-                            <div
-                                class="name-container"
-                                on:click={() => displayFoodIntake(food)}
-                            >
-                                <span>{food.name}</span>
-                            </div>
-                        {:else}
-                            <img
-                                src={food.img_src}
-                                alt="food"
-                                on:click={() => displayFoodIntake(food)}
-                            />
-                        {/if}
-                    {/each}
-                </div>
-            {/each}
-            {#if !isModalOpen}
-                <CircleButton
-                    floated
-                    on:click={() => {
-                        isAdding = true;
-                        isModalOpen = true;
-                    }}
-                >
-                    <svg
-                        class="floating-button"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke-width="1"
-                        stroke="currentColor"
-                    >
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            d="M12 9v6m3-3H9"
-                        />
-                    </svg>
-                </CircleButton>
-            {/if}
-        </div>
     {/if}
-{/await}
+{:else}
+    <div class="background" bind:this={scrollDiv} on:scroll={loadData}>
+        {#each foodDateList as entry (entry.date)}
+            <h1>{entry.date}</h1>
+            <div class="foodintake-wrapper">
+                {#each entry.foods as food}
+                    {#if food.img_src === null}
+                        <div
+                            class="name-container"
+                            on:click={() => displayFoodIntake(food)}
+                        >
+                            <span>{food.name}</span>
+                        </div>
+                    {:else}
+                        <img
+                            src={food.img_src}
+                            alt="food"
+                            on:click={() => displayFoodIntake(food)}
+                        />
+                    {/if}
+                {/each}
+            </div>
+            {#if loading}
+                <div>Loading...</div>
+            {/if}
+        {/each}
+        {#if !isModalOpen}
+            <CircleButton
+                floated
+                on:click={() => {
+                    isAdding = true;
+                    isModalOpen = true;
+                }}
+            >
+                <svg
+                    class="floating-button"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1"
+                    stroke="currentColor"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        d="M12 9v6m3-3H9"
+                    />
+                </svg>
+            </CircleButton>
+        {/if}
+    </div>
+{/if}
 
 <Modal
     bind:isModalOpen
