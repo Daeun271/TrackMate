@@ -102,6 +102,12 @@ export async function getFoodIntakesTotal(startDate, endDate) {
     });
 }
 
+export async function searchFoodIntakes(searchDate) {
+    return await request('POST', 'user/food_intakes/search_food_intakes', {
+        search_date: searchDate,
+    });
+}
+
 export async function updateFoodIntake(
     uid,
     name,

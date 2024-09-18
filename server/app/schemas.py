@@ -62,7 +62,7 @@ class FoodIntakeForDateRangeResponse(BaseModel):
 
 
 class FoodIntakeSearchRequest(BaseModel):
-    search_start_date: date
+    search_date: date
 
 
 class FoodIntakeUpdateRequest(FoodIntakeBaseWithUid):

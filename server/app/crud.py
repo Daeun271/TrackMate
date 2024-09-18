@@ -78,9 +78,10 @@ def get_food_intakes_by_user_id_and_date_range(db: Session, food_intakes_request
 
 
 def get_food_intakes(db: Session, food_intakes_request: schemas.FoodIntakeSearchRequest, user_id: int):
-    date = db.query(models.FoodIntake.consumed_at).filter(models.FoodIntake.user_id == user_id, models.FoodIntake.consumed_at < food_intakes_request.search_start_date).order_by(models.FoodIntake.consumed_at.desc()).first()
-    if date is None:
+    dateRow = db.query(models.FoodIntake.consumed_at).filter(models.FoodIntake.user_id == user_id, models.FoodIntake.consumed_at < food_intakes_request.search_date).order_by(models.FoodIntake.consumed_at.desc()).first()
+    if dateRow is None:
         return None
+    date = dateRow[0]
     today = date + timedelta(days=1)
     last_week = date - timedelta(days=7)
     return get_food_intakes_by_user_id_and_date_range(db, schemas.DateRangeRequest(start_date=last_week, end_date=today), user_id)
