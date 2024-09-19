@@ -23,12 +23,16 @@
     export let widthAndHeight = '45px';
 
     let isMobile = window.matchMedia('(max-width: 480px)').matches;
+    window.matchMedia('(max-width: 480px)').addEventListener('change', (e) => {
+        isMobile = e.matches;
+    });
 </script>
 
 <button
     class:button-clicked={clicked}
     class:floating-button={floated}
-    style={isMobile ? 'bottom: 90px;' : 'bottom: 20px;'}
+    class:mobile-floating-button={floated && isMobile}
+    class:desktop-floating-button={floated && !isMobile}
     style:width={widthAndHeight}
     style:height={widthAndHeight}
     on:click={onClick}
@@ -67,9 +71,18 @@
 
     button.floating-button {
         position: fixed;
-        right: 20px;
         z-index: 1000;
         box-shadow: 2px 2px 3px #999;
+    }
+
+    button.mobile-floating-button {
+        bottom: 70px;
+        right: 20px;
+    }
+
+    button.desktop-floating-button {
+        bottom: 30px;
+        right: 40px;
     }
 
     button.floating-button.button-clicked {

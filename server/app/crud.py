@@ -80,7 +80,7 @@ def get_food_intakes_by_user_id_and_date_range(db: Session, food_intakes_request
 def get_food_intakes(db: Session, food_intakes_request: schemas.FoodIntakeSearchRequest, user_id: int):
     dateRow = db.query(models.FoodIntake.consumed_at).filter(models.FoodIntake.user_id == user_id, models.FoodIntake.consumed_at < food_intakes_request.search_date).order_by(models.FoodIntake.consumed_at.desc()).first()
     if dateRow is None:
-        return None
+        return schemas.FoodIntakeForDateRangeResponse(foods=[])
     date = dateRow[0]
     today = date + timedelta(days=1)
     last_week = date - timedelta(days=7)
@@ -98,7 +98,7 @@ def create_food_intake(db: Session, food_intake: schemas.FoodIntakeCreateRequest
 def update_food_intake(db: Session, food_intake: schemas.FoodIntakeUpdateRequest, user_id: int):
     db_food_intake = db.query(models.FoodIntake).filter(models.FoodIntake.user_id == user_id, models.FoodIntake.uid == food_intake.uid).first()
     if db_food_intake is None:
-        return None
+        return
     db_food_intake.name = food_intake.name
     db_food_intake.calories = food_intake.calories
     db_food_intake.consumed_at = food_intake.consumed_at
@@ -128,7 +128,7 @@ def create_exercise(db: Session, exercise: schemas.ExerciseCreateRequest, user_i
 def update_exercise(db: Session, exercise: schemas.ExerciseUpdateRequest, user_id: int):
     db_exercise = db.query(models.Exercise).filter(models.Exercise.user_id == user_id, models.Exercise.uid == exercise.uid).first()
     if db_exercise is None:
-        return None
+        return
     db_exercise.exercise_id = exercise.exercise_id
     db_exercise.category = exercise.category
     db_exercise.date = exercise.date

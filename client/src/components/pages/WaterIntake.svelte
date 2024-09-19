@@ -195,6 +195,7 @@
         justify-content: center;
         align-items: center;
         flex-direction: column;
+        row-gap: 20px;
         height: 100%;
     }
 

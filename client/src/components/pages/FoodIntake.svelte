@@ -22,7 +22,7 @@
     import { getFoodImageUrl, searchFoodIntakes } from '../../api';
     import EmptyPage from '../EmptyPage.svelte';
     import imageUrl from '../../assets/icons/vegan-food.png?url';
-    import { onMount } from 'svelte';
+    import { onMount, afterUpdate } from 'svelte';
 
     let isModalOpen = false;
     let isAdding = true;
@@ -57,41 +57,48 @@
             food.priority =
                 timeCategoryPriorities[food.time_category] ?? Infinity;
 
-            let found = false;
+            addFoodIntake(food);
+        }
 
-            for (let j = 0; j < foodDateList.length; j++) {
-                if (foodDateList[j].date === food.consumed_at) {
-                    for (let k = 0; k < foodDateList[j].foods.length; k++) {
-                        if (food.priority < foodDateList[j].foods[k].priority) {
-                            foodDateList[j].foods.splice(k, 0, food);
-                            found = true;
-                            break;
-                        }
-                    }
+        loading = false;
+    });
 
-                    if (!found) {
-                        foodDateList[j].foods.push(food);
+    afterUpdate(() => {
+        loadData();
+    });
+
+    function addFoodIntake(food) {
+        let found = false;
+
+        for (let i = 0; i < foodDateList.length; i++) {
+            if (foodDateList[i].date === food.consumed_at) {
+                for (let j = 0; j < foodDateList[i].foods.length; j++) {
+                    if (food.priority < foodDateList[i].foods[j].priority) {
+                        foodDateList[i].foods.splice(j, 0, food);
                         found = true;
+                        break;
                     }
                 }
-            }
 
-            if (!found) {
-                foodDateList.push({
-                    date: food.consumed_at,
-                    foods: [food],
-                });
+                if (!found) {
+                    foodDateList[i].foods.push(food);
+                    found = true;
+                    break;
+                }
             }
+        }
+
+        if (!found) {
+            foodDateList.push({
+                date: food.consumed_at,
+                foods: [food],
+            });
         }
 
         foodDateList = foodDateList.toSorted(
             (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
         );
-
-        loading = false;
-    });
-
-    function addFoodIntake(event) {}
+    }
 
     let foodIntake = null;
 
@@ -101,29 +108,120 @@
         isModalOpen = true;
     }
 
-    function updateFoodIntake(event) {
-        console.log(event.detail);
+    function updateFoodIntake(food) {
+        deleteFoodIntake(food.uid);
+        addFoodIntake(food);
     }
 
-    function deleteFoodIntake(event) {
-        console.log(event.detail);
+    function deleteFoodIntake(foodUid) {
+        for (let i = 0; i < foodDateList.length; i++) {
+            let foodIntake = foodDateList[i].foods.find(
+                (food) => food.uid === foodUid,
+            );
+
+            if (foodIntake) {
+                const index = foodDateList[i].foods.indexOf(foodIntake);
+                foodDateList[i].foods.splice(index, 1);
+                if (foodDateList[i].foods.length === 0) {
+                    foodDateList.splice(i, 1);
+                }
+
+                break;
+            }
+        }
+
+        foodDateList = [...foodDateList];
     }
 
-    let scrollDiv;
+    let scrollDiv = null;
+    let scrollDivResizeObserver = new ResizeObserver(() => {
+        loadData();
+    });
+    $: {
+        if (scrollDiv) {
+            scrollDivResizeObserver.observe(scrollDiv);
+        } else {
+            scrollDivResizeObserver.disconnect();
+        }
+    }
 
-    function loadData(event) {
-        if (
-            scrollDiv.scrollHeight - scrollDiv.scrollTop ===
-            scrollDiv.clientHeight
-        ) {
+    let isMobile = window.matchMedia('(max-width: 480px)').matches;
+    window.matchMedia('(max-width: 480px)').addEventListener('change', (e) => {
+        isMobile = e.matches;
+    });
+
+    let loadedAll = false;
+
+    async function loadData(event) {
+        if (loadedAll) return;
+
+        let shouldLoad = false;
+
+        if (!scrollDiv) return;
+
+        if (loading) return;
+
+        /*
+        if (scrollDiv.scrollHeight <= scrollDiv.clientHeight) {
             console.log('loading more data');
         }
+        */
+
+        if (isMobile) {
+            if (
+                scrollDiv.scrollTop + scrollDiv.clientHeight >=
+                scrollDiv.scrollHeight - 30
+            ) {
+                shouldLoad = true;
+            }
+        } else {
+            if (
+                scrollDiv.scrollTop + scrollDiv.clientHeight >=
+                scrollDiv.scrollHeight - 60
+            ) {
+                shouldLoad = true;
+            }
+        }
+
+        if (shouldLoad) {
+            loading = true;
+
+            const lastDate = new Date(
+                foodDateList[foodDateList.length - 1].date,
+            );
+            const foodIntakeRes = await searchFoodIntakes(formatDate(lastDate));
+
+            if (foodIntakeRes.foods.length === 0) {
+                loadedAll = true;
+                loading = false;
+                return;
+            }
+
+            for (let i = 0; i < foodIntakeRes.foods.length; i++) {
+                const food = foodIntakeRes.foods[i];
+
+                if (food.has_image === true) {
+                    food.img_src = getFoodImageUrl(food.uid);
+                } else {
+                    food.img_src = null;
+                }
+
+                food.priority =
+                    timeCategoryPriorities[food.time_category] ?? Infinity;
+
+                addFoodIntake(food);
+            }
+        }
+
+        loading = false;
     }
 </script>
 
 {#if foodDateList.length === 0}
     {#if loading}
-        <div>Loading...</div>
+        <div class="loader-box">
+            <span class="loader"></span>
+        </div>
     {:else}
         <EmptyPage
             text1="No food intake found"
@@ -157,10 +255,12 @@
                     {/if}
                 {/each}
             </div>
-            {#if loading}
-                <div>Loading...</div>
-            {/if}
         {/each}
+        {#if loading}
+            <div class="loader-box">
+                <span class="loader"></span>
+            </div>
+        {/if}
         {#if !isModalOpen}
             <CircleButton
                 floated
@@ -192,9 +292,37 @@
     bind:isModalOpen
     bind:foodIntake
     bind:isAdding
-    on:add={addFoodIntake}
-    on:edit={updateFoodIntake}
-    on:delete={deleteFoodIntake}
+    on:add={(event) => {
+        const food = {
+            calories: Number(event.detail.calories),
+            name: event.detail.name,
+            consumed_at: event.detail.consumed_at,
+            time_category: event.detail.time_category || null,
+            has_image: event.detail.img_src !== '',
+            img_src: event.detail.img_src || null,
+            priority:
+                timeCategoryPriorities[event.detail.time_category] ?? Infinity,
+            uid: event.detail.uid,
+        };
+        addFoodIntake(food);
+    }}
+    on:edit={(event) => {
+        const food = {
+            calories: Number(event.detail.calories),
+            name: event.detail.name,
+            consumed_at: event.detail.consumed_at,
+            time_category: event.detail.time_category || null,
+            has_image: event.detail.img_src !== '',
+            img_src: event.detail.img_src || null,
+            priority:
+                timeCategoryPriorities[event.detail.time_category] ?? Infinity,
+            uid: event.detail.uid,
+        };
+        updateFoodIntake(food);
+    }}
+    on:delete={(event) => {
+        deleteFoodIntake(event.detail.uid);
+    }}
 />
 
 <style>
@@ -243,5 +371,32 @@
         padding: 10px;
         font-size: 20px;
         cursor: pointer;
+    }
+
+    .loader-box {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+    }
+
+    .loader {
+        width: 48px;
+        height: 48px;
+        border: 5px solid #b8b7b7;
+        border-bottom-color: transparent;
+        border-radius: 50%;
+        display: inline-block;
+        box-sizing: border-box;
+        animation: rotation 1s linear infinite;
+    }
+
+    @keyframes rotation {
+        0% {
+            transform: rotate(0deg);
+        }
+        100% {
+            transform: rotate(360deg);
+        }
     }
 </style>
