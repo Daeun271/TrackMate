@@ -115,6 +115,8 @@
         }
 
         isModalOpen = false;
+        errorMessage = '';
+        deleteErrorMessage = '';
     }
 
     let deleteErrorMessage = '';

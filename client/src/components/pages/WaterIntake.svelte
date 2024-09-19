@@ -21,6 +21,8 @@
     import Modal from '../Modal.svelte';
     import Button from '../Button.svelte';
     import { getWaterIntakesTotal, addWaterIntake } from '../../api.js';
+    import DatePicker from '../DatePicker.svelte';
+    import { formatDate } from './FoodIntake.svelte';
 
     let newVolume = 0;
 
@@ -35,10 +37,10 @@
         return waterIntakeTotalRes;
     }
 
-    async function updateWaterIntake() {
-        await addWaterIntake(newVolume, formatDateTime(new Date()));
+    async function updateWaterIntake(date) {
+        await addWaterIntake(newVolume, date);
+        waterIntakePromise = await getWaterIntakesTotal(date);
         modalOpen = false;
-        waterIntakePromise = getWaterIntake();
     }
 
     function openModal() {
@@ -48,8 +50,21 @@
 
     $: waterLevel = Math.min(newVolume / 2, 1);
     $: levelPercent = -90 * waterLevel + 90;
+
+    let today = formatDate(new Date());
+    let date = today;
+    async function showYesterday(event) {
+        waterIntakePromise = await getWaterIntakesTotal(event.detail);
+        date = event.detail;
+    }
+
+    async function showData() {
+        waterIntakePromise = await getWaterIntakesTotal(date);
+    }
 </script>
 
+<DatePicker on:showYesterday={showYesterday} on:showData={showData} bind:date
+></DatePicker>
 <div class="waterintake-wrapper">
     {#await waterIntakePromise}
         <p>loading...</p>
@@ -77,6 +92,7 @@
     <Button isExpanded={false} on:click={openModal}>
         <span>Record</span>
     </Button>
+
     <Modal bind:isOpen={modalOpen}>
         <div
             slot="modal-background"
@@ -148,7 +164,12 @@
                     </svg>
                 </CircleButton>
             </div>
-            <Button isExpanded={false} on:click={updateWaterIntake}>
+            <Button
+                isExpanded={false}
+                on:click={() => {
+                    updateWaterIntake(date);
+                }}
+            >
                 <span>Save</span>
             </Button>
         </div>

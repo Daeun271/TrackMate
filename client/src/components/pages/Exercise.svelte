@@ -1,29 +1,20 @@
 <script>
     import Modal from '../exercise/Modal.svelte';
-    import CircleButton from '../CircleButton.svelte';
     import { formatDate } from './FoodIntake.svelte';
     import {
         activities,
         categoryToColor,
     } from '../../../../server/temp/activities.js';
     import { getExercisesTotal, deleteExercise } from '../../api.js';
+    import DatePicker from '../DatePicker.svelte';
 
     let today = formatDate(new Date());
     let date = today;
 
-    function handleMaxDate(event) {
-        new Date(event.target.value) > new Date()
-            ? (event.target.value = today)
-            : event.target.value;
-        date = event.target.value;
-    }
-
-    async function showYesterday() {
-        const newDate = formatDate(
-            new Date(new Date(date).setDate(new Date(date).getDate() - 1)),
-        );
-
+    async function showYesterday(event) {
         let exercises = await exercisePromise;
+
+        const newDate = event.detail;
 
         if (!(newDate in exercises)) {
             appendExercises(exercises, newDate);
@@ -32,13 +23,11 @@
         date = newDate;
     }
 
-    function showTomorrow() {
-        const newDate = formatDate(
-            new Date(new Date(date).setDate(new Date(date).getDate() + 1)),
-        );
+    async function showData() {
+        let exercises = await exercisePromise;
 
-        if (newDate <= today) {
-            date = newDate;
+        if (!(date in exercises)) {
+            appendExercises(exercises, date);
         }
     }
 
@@ -202,20 +191,11 @@
     <p>loading...</p>
 {:then exercises}
     <div class="bg">
-        <div class="date-header">
-            <CircleButton on:click={showYesterday} widthAndHeight="25px"
-                >&lt</CircleButton
-            >
-            <input
-                type="date"
-                bind:value={date}
-                max={today}
-                on:change={handleMaxDate}
-            />
-            <CircleButton on:click={showTomorrow} widthAndHeight="25px"
-                >&gt</CircleButton
-            >
-        </div>
+        <DatePicker
+            on:showYesterday={showYesterday}
+            on:showData={showData}
+            bind:date
+        ></DatePicker>
         <div class="exercise-list">
             <div class="exercise-card-wrapper">
                 <div class="empty-exercise-card">
@@ -301,47 +281,6 @@
         display: flex;
         flex-direction: column;
         height: 100%;
-    }
-
-    .date-header {
-        flex: 0 0 auto;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 10px 20px;
-        height: 40px;
-
-        border-bottom: 2px solid #f0f0f0;
-        background-color: transparent;
-        color: 'black';
-    }
-
-    input[type='date'] {
-        border: none;
-        outline: none;
-
-        -webkit-appearance: none;
-        -moz-appearance: none;
-        appearance: none;
-
-        font-size: 20px;
-        text-align: center;
-
-        color: black;
-        background-color: transparent;
-    }
-
-    input[type='date']::-webkit-inner-spin-button {
-        display: none;
-    }
-
-    input[type='date']::-webkit-calendar-picker-indicator {
-        background-image: url('../../assets/icons/calendar.png');
-        cursor: pointer;
-    }
-
-    input[type='date']::-webkit-date-and-time-value {
-        text-align: left;
     }
 
     .exercise-list {

@@ -24,6 +24,7 @@
     export let backgroundColor = '#007bff';
     export let primaryBordered = false;
     export let secondaryBordered = false;
+    export let isRound = false;
 </script>
 
 <button
@@ -33,6 +34,7 @@
     class:loading={isLoading}
     class:primary-border={primaryBordered}
     class:secondary-border={secondaryBordered}
+    class:round={isRound}
     style="background-color: {backgroundColor}"
     on:click={onClick}><slot></slot></button
 >
@@ -77,5 +79,9 @@
     .secondary-border {
         border: 2px solid #f50707;
         color: #f50707;
+    }
+
+    .round {
+        border-radius: 20px;
     }
 </style>
