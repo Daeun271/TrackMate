@@ -20,5 +20,8 @@
         "storybook": "^8.1.6",
         "svelte": "^4.2.12",
         "vite": "^5.2.0"
+    },
+    "dependencies": {
+        "chart.js": "^4.4.4"
     }
 }

@@ -7,6 +7,7 @@
     import FoodIntake from './components/pages/FoodIntake.svelte';
     import Exercise from './components/pages/Exercise.svelte';
     import Community from './components/pages/Community.svelte';
+    import Home from './components/pages/Home.svelte';
 
     import { currentTab } from './tabs.js';
     import { user } from './user.js';
@@ -24,7 +25,7 @@
         {/if}
         <main>
             {#if $currentTab === 'home'}
-                Home
+                <Home />
             {:else if $currentTab === 'exercise'}
                 <Exercise />
             {:else if $currentTab === 'food_intake'}
