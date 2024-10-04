@@ -52,6 +52,11 @@
 </div>
 
 <style>
+    * {
+        -webkit-user-select: none;
+        user-select: none;
+    }
+
     .date-header {
         flex: 0 0 auto;
         display: flex;
