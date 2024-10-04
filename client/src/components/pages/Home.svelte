@@ -1,76 +1,129 @@
 <script>
-    import { onMount } from 'svelte';
+    import { afterUpdate, onMount } from 'svelte';
     import Chart from 'chart.js/auto';
     import * as Utils from '../../chartUtils.js';
     import ToggleButton from '../home/ToggleButton.svelte';
+    import {
+        weeklyCategoryData,
+        weeklyWaterData,
+        weeklyCaloriesData,
+        monthlyCategoryData,
+        monthlyWaterData,
+        monthlyCaloriesData,
+    } from '../../myCharts.js';
 
-    let dailyCategory = null;
-    let dailyWater = null;
-    let dailyCalories = null;
-    let monthlyCategory = null;
-    let monthlyWater = null;
-    let monthlyCalories = null;
+    let isMonthly = false;
 
-    const labels = Utils.months({ count: 7 });
-    const data = {
-        labels: labels,
-        datasets: [
-            {
-                label: 'My First Dataset',
-                data: [65, 59, 80, 81, 56, 55, 40],
-                fill: false,
-                borderColor: 'rgb(75, 192, 192)',
-                tension: 0.1,
-            },
-        ],
-    };
+    let elCategory = null;
+    let elWater = null;
+    let elCalories = null;
+
+    let chartCategory = null;
+    let chartWater = null;
+    let chartCalories = null;
 
     onMount(() => {
-        new Chart(dailyCategory, {
+        chartCategory = new Chart(elCategory, {
             type: 'line',
-            data: data,
+            data: {
+                labels: [],
+                datasets: [],
+            },
         });
 
-        new Chart(dailyWater, {
+        chartWater = new Chart(elWater, {
             type: 'line',
-            data: data,
+            data: {
+                labels: [],
+                datasets: [],
+            },
         });
 
-        new Chart(dailyCalories, {
+        chartCalories = new Chart(elCalories, {
             type: 'line',
-            data: data,
+            data: {
+                labels: [],
+                datasets: [],
+            },
         });
 
-        new Chart(monthlyCategory, {
-            type: 'line',
-            data: data,
-        });
+        /*if (isMonthly) {
+            monthlyCategoryChart = new Chart(monthlyCategory, {
+                type: 'line',
+                data: monthlyCategoryData,
+            });
 
-        new Chart(monthlyWater, {
-            type: 'line',
-            data: data,
-        });
+            monthlyWaterChart = new Chart(monthlyWater, {
+                type: 'line',
+                data: monthlyWaterData,
+            });
 
-        new Chart(monthlyCalories, {
-            type: 'line',
-            data: data,
-        });
+            monthlyCaloriesChart = new Chart(monthlyCalories, {
+                type: 'line',
+                data: monthlyCaloriesData,
+            });
+        } else {
+            weeklyCategoryChart = new Chart(elCategory, {
+                type: 'line',
+                data: weeklyCategoryData,
+            });
+
+            weeklyWaterChart = new Chart(elWater, {
+                type: 'line',
+                data: weeklyWaterData,
+            });
+
+            weeklyCaloriesChart = new Chart(elCalories, {
+                type: 'line',
+                data: weeklyCaloriesData,
+            });
+        }*/
     });
+
+    function updateCharts() {
+        if (
+            chartCategory === null ||
+            chartWater === null ||
+            chartCalories === null
+        ) {
+            return;
+        }
+
+        if (isMonthly) {
+            chartCategory.data = monthlyCategoryData;
+            chartWater.data = monthlyWaterData;
+            chartCalories.data = monthlyCaloriesData;
+        } else {
+            chartCategory.data = weeklyCategoryData;
+            chartWater.data = weeklyWaterData;
+            chartCalories.data = weeklyCaloriesData;
+        }
+
+        chartCategory.update();
+        chartWater.update();
+        chartCalories.update();
+    }
+
+    $: {
+        isMonthly;
+        chartCategory;
+        chartWater;
+        chartCalories;
+
+        updateCharts();
+    }
 </script>
 
 <div class="bg">
     <div class="switch">
-        <ToggleButton />
+        <ToggleButton bind:isMonthly></ToggleButton>
     </div>
 
     <div class="charts-scroll">
         <div class="charts-container">
-            <canvas bind:this={dailyCategory}></canvas>
-            <canvas bind:this={dailyWater}></canvas>
-            <canvas bind:this={dailyCalories}></canvas>
-            <canvas bind:this={monthlyCategory}></canvas>
-            <canvas bind:this={monthlyWater}></canvas>
-            <canvas bind:this={monthlyCalories}></canvas>
+            <canvas bind:this={elCategory}></canvas>
+            <canvas bind:this={elWater}></canvas>
+            <canvas bind:this={elCalories}></canvas>
         </div>
     </div>
 </div>

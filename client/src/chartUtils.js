@@ -1,3 +1,21 @@
+const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+export function weekdays(config) {
+    var cfg = config || {};
+    var count = cfg.count || 7;
+    var values = [];
+    var i, value;
+
+    const today = new Date().getDay();
+
+    for (i = 0; i < count; ++i) {
+        value = WEEKDAYS[Math.abs((today - count + i + 8) % 7)];
+        values.push(value);
+    }
+
+    return values;
+}
+
 const MONTHS = [
     'January',
     'February',
@@ -20,8 +38,10 @@ export function months(config) {
     var values = [];
     var i, value;
 
+    const thisMonth = new Date().getMonth();
+
     for (i = 0; i < count; ++i) {
-        value = MONTHS[Math.ceil(i) % 12];
+        value = MONTHS[Math.abs((thisMonth - count + i + 13) % 12)];
         values.push(value.substring(0, section));
     }
 

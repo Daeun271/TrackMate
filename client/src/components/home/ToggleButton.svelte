@@ -5,7 +5,7 @@
 <div>
     <input type="checkbox" id="switch" bind:checked={isMonthly} />
     <label for="switch">
-        <div class="daily">Daily</div>
+        <div class="weekly">Weekly</div>
         <div class="monthly">Monthly</div>
         <div class="indicator"></div>
     </label>
@@ -57,7 +57,7 @@
         transform: translateX(100%);
     }
 
-    input:checked + label .daily,
+    input:checked + label .weekly,
     input:not(:checked) + label .monthly {
         opacity: 0.5;
     }
