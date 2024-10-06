@@ -209,3 +209,7 @@ export async function uploadUserWeight(weight) {
 export async function getUserWeight() {
     return await request('GET', 'user/weight/get');
 }
+
+export async function getStats() {
+    return await request('GET', 'user/stats/get');
+}

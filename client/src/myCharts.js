@@ -1,96 +1,122 @@
 import * as Utils from './chartUtils.js';
+import { getStats } from './api.js';
 
 const weeklyLabels = Utils.weekdays({ count: 7 });
 const monthlyLabels = Utils.months({ count: 6, section: 3 });
 
-export const weeklyCategoryData = {
-    labels: weeklyLabels,
-    datasets: [
-        {
-            label: 'Category 1',
-            data: [65, 59, 80, 81, 56, 55, 40],
-            fill: false,
-            borderColor: 'rgba(75,192,192,1)',
-            lineTension: 0.1,
-        },
-        {
-            label: 'Category 2',
-            data: [45, 49, 70, 71, 46, 45, 30],
-            fill: false,
-            borderColor: 'rgba(192,75,192,1)',
-            lineTension: 0.1,
-        },
-    ],
-};
+function stringToHslColor(str, s = 50, l = 50) {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    }
 
-export const weeklyWaterData = {
-    labels: weeklyLabels,
-    datasets: [
-        {
-            label: 'Water',
-            data: [3, 2, 2, 1, 5, 2, 1],
-            fill: false,
-            borderColor: 'rgba(75,192,192,1)',
-            lineTension: 0.1,
-        },
-    ],
-};
+    let h = hash % 360;
+    return `hsl(${h}, ${s}%, ${l}%)`;
+}
 
-export const weeklyCaloriesData = {
-    labels: weeklyLabels,
-    datasets: [
-        {
-            label: 'Calories',
-            data: [2000, 1800, 1500, 1600, 1400, 1200, 1300],
-            fill: false,
-            borderColor: 'rgba(75,192,192,1)',
-            lineTension: 0.1,
-        },
-    ],
-};
+export async function getStatsForCharts() {
+    const stats = await getStats();
 
-export const monthlyCategoryData = {
-    labels: monthlyLabels,
-    datasets: [
-        {
-            label: 'Category 1',
-            data: [65, 59, 80, 81, 56, 55],
-            fill: false,
-            borderColor: 'rgba(75,192,192,1)',
-            lineTension: 0.1,
-        },
-        {
-            label: 'Category 2',
-            data: [45, 49, 70, 71, 46, 45],
-            fill: false,
-            borderColor: 'rgba(192,75,192,1)',
-            lineTension: 0.1,
-        },
-    ],
-};
+    const weeklyCategoryData = {
+        labels: Object.keys(stats.weekly.category),
+        datasets: [
+            {
+                label: 'Workout Category',
+                data: Object.values(stats.weekly.category),
+                backgroundColor: Object.keys(stats.weekly.category).map((key) =>
+                    stringToHslColor(key),
+                ),
+                hoverOffset: 4,
+            },
+        ],
+    };
 
-export const monthlyWaterData = {
-    labels: monthlyLabels,
-    datasets: [
-        {
-            label: 'Water',
-            data: [3, 2, 2, 1, 5, 2],
-            fill: false,
-            borderColor: 'rgba(75,192,192,1)',
-            lineTension: 0.1,
-        },
-    ],
-};
+    const weeklyWaterintakeData = {
+        labels: weeklyLabels,
+        datasets: [
+            {
+                label: 'Water Intake',
+                data: stats.weekly.water_intake,
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(54, 162, 235)',
+                borderWidth: 1,
+            },
+        ],
+    };
 
-export const monthlyCaloriesData = {
-    labels: monthlyLabels,
-    datasets: [
-        {
-            label: 'Calories',
-            data: [2000, 1800, 1500, 1600, 1400, 1200],
-            fill: false,
-            borderColor: 'rgba(75,192,192,1)',
-            lineTension: 0.1,
-        },
-    ],
-};
+    const weeklyCaloriesData = {
+        labels: weeklyLabels,
+        datasets: [
+            {
+                label: 'Consumed Calories',
+                data: stats.weekly.calories[1],
+                fill: false,
+                borderColor: 'rgba(192,75,192,1)',
+                lineTenstion: 0.1,
+            },
+            {
+                label: 'Burned Calories',
+                data: stats.weekly.calories[0],
+                fill: false,
+                borderColor: 'rgba(75,192,192,1)',
+                lineTension: 0.1,
+            },
+        ],
+    };
+
+    const monthlyCategoryData = {
+        labels: Object.keys(stats.monthly.category),
+        datasets: [
+            {
+                label: 'Workout Category',
+                data: Object.values(stats.monthly.category),
+                backgroundColor: Object.keys(stats.monthly.category).map(
+                    (key) => stringToHslColor(key),
+                ),
+                hoverOffset: 4,
+            },
+        ],
+    };
+
+    const monthlyWaterintakeData = {
+        labels: monthlyLabels,
+        datasets: [
+            {
+                label: 'Water Intake',
+                data: stats.monthly.water_intake,
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(54, 162, 235)',
+                borderWidth: 1,
+            },
+        ],
+    };
+
+    const monthlyCaloriesData = {
+        labels: monthlyLabels,
+        datasets: [
+            {
+                label: 'Consumed Calories',
+                data: stats.monthly.calories[1],
+                fill: false,
+                borderColor: 'rgba(192,75,192,1)',
+                lineTension: 0.1,
+            },
+            {
+                label: 'Burned Calories',
+                data: stats.monthly.calories[0],
+                fill: false,
+                borderColor: 'rgba(75,192,192,1)',
+                lineTension: 0.1,
+            },
+        ],
+    };
+
+    return {
+        weeklyCategoryData,
+        weeklyWaterintakeData,
+        weeklyCaloriesData,
+        monthlyCategoryData,
+        monthlyWaterintakeData,
+        monthlyCaloriesData,
+    };
+}

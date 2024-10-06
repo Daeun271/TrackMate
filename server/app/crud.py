@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.sql import func
 from . import models, schemas
 import bcrypt
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 def get_user(db: Session, user_id: int):
     return db.query(models.User).filter(models.User.id == user_id).first()
@@ -56,7 +56,7 @@ def update_user_photo(db: Session, user: schemas.UserSettingsPhoto, user_id: int
 
 
 def get_total_water_intakes_by_user_id_and_date(db: Session, water_intake_total_request: schemas.WaterIntakeTotalForDateRequest, user_id: int):
-    total_volume=db.query(func.sum(models.WaterIntake.volume)).filter(models.WaterIntake.user_id == user_id, func.Date(models.WaterIntake.created_at) == func.Date(water_intake_total_request.date_time)).scalar()
+    total_volume = db.query(func.sum(models.WaterIntake.volume)).filter(models.WaterIntake.user_id == user_id, func.Date(models.WaterIntake.created_at) == func.Date(water_intake_total_request.date_time)).scalar()
     
     if total_volume is None:
         total_volume = 0
@@ -155,3 +155,111 @@ def get_user_weight(db: Session, user_id: int):
     if db_user is None:
         return None
     return db_user.weight
+
+
+def get_category_data(db: Session, user_id: int, count: int):
+    
+    category_count = {}
+    
+    end = datetime.now()
+    start = end - timedelta(days=(count-1))
+    
+    exercises = db.query(models.Exercise.category, func.count(models.Exercise.category)).filter(models.Exercise.user_id == user_id, models.Exercise.date > start, models.Exercise.date <= end).group_by(models.Exercise.category).all()
+    
+    category_count = {}
+    
+    for exercise in exercises:
+        category_count[exercise[0]] = exercise[1]
+    
+    return category_count
+
+
+def get_weekly_category_data(db: Session, user_id: int):
+    return get_category_data(db, user_id, 7)
+
+
+def get_monthly_category_data(db: Session, user_id: int):
+    return get_category_data(db, user_id, 180)
+
+
+def get_water_intake_data(db: Session, user_id: int, ranges):
+    water_data = []
+    
+    for (range_start, range_end) in ranges:
+        range_sum = db.query(func.sum(models.WaterIntake.volume)).filter(models.WaterIntake.user_id == user_id, models.WaterIntake.created_at >= range_start, models.WaterIntake.created_at < range_end).scalar()
+        
+        if range_sum is None:
+            water_data.append(0)
+        else:
+            water_data.append(range_sum)
+            
+    return water_data
+
+
+def get_weekly_ranges():
+    ranges = []
+
+    now = datetime.now()
+    today = datetime(now.year, now.month, now.day)
+
+    for i in range(7):
+        start = today - timedelta(days=i)
+        end = today - timedelta(days=(i-1))
+        ranges.insert(0, (start.date(), end.date()))
+    
+    return ranges
+
+
+def get_monthly_ranges():
+    ranges = []
+    
+    now = datetime.now()
+    current_month = now.month
+    
+    for i in range(6):
+        start = datetime(now.year, current_month-i, 1).date()
+        end = datetime(now.year, current_month-i+1, 1).date()
+        ranges.insert(0, (start, end))
+    
+    return ranges
+
+
+def get_weekly_water_intake_data(db: Session, user_id: int):
+    return get_water_intake_data(db, user_id, get_weekly_ranges())
+
+
+def get_monthly_water_intake_data(db: Session, user_id: int):
+    return get_water_intake_data(db, user_id, get_monthly_ranges())
+
+
+def get_calories_data(db: Session, user_id: int, ranges):
+    calories_data = []
+    calories_burned = []
+    calories_consumed = []
+    
+    for (range_start, range_end) in ranges:
+        burned_calories = db.query(func.sum(models.Exercise.burned_calories)).filter(models.Exercise.user_id == user_id, models.Exercise.date >= range_start, models.Exercise.date < range_end).scalar()
+        consumed_calories = db.query(func.sum(models.FoodIntake.calories)).filter(models.FoodIntake.user_id == user_id, models.FoodIntake.consumed_at >= range_start, models.FoodIntake.consumed_at < range_end).scalar()
+        
+        if burned_calories is None:
+            calories_burned.append(0)
+        else:
+            calories_burned.append(burned_calories)
+        
+        if consumed_calories is None:
+            calories_consumed.append(0)
+        else:
+            calories_consumed.append(consumed_calories)
+    
+    calories_data.append(calories_burned)
+    calories_data.append(calories_consumed)
+    
+    return calories_data
+
+
+def get_weekly_calories_data(db: Session, user_id: int):
+    return get_calories_data(db, user_id, get_weekly_ranges())
+
+
+def get_monthly_calories_data(db: Session, user_id: int):
+    return get_calories_data(db, user_id, get_monthly_ranges())

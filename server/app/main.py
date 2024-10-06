@@ -244,3 +244,15 @@ def upload_user_weight(
 @app.get("/user/weight/get")
 def get_user_weight(request: Request, db: Session = Depends(get_db)) -> Optional[float]:
     return crud.get_user_weight(db=db, user_id=request.state.user_id)
+
+
+@app.get("/user/stats/get")
+def get_user_stats(request: Request, db: Session = Depends(get_db)):
+    weekly_category_data = crud.get_weekly_category_data(db, user_id=request.state.user_id)
+    weekly_water_intake_data = crud.get_weekly_water_intake_data(db, user_id=request.state.user_id)
+    weekly_calories_data = crud.get_weekly_calories_data(db, user_id=request.state.user_id)
+    monthly_category_data = crud.get_monthly_category_data(db, user_id=request.state.user_id)
+    monthly_water_intake_data = crud.get_monthly_water_intake_data(db, user_id=request.state.user_id)
+    monthly_calories_data = crud.get_monthly_calories_data(db, user_id=request.state.user_id)
+    
+    return schemas.UserStatsResponse(weekly=schemas.UserStatsBase(category=weekly_category_data, water_intake=weekly_water_intake_data, calories=weekly_calories_data), monthly=schemas.UserStatsBase(category=monthly_category_data, water_intake=monthly_water_intake_data, calories=monthly_calories_data))

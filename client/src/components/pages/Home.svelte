@@ -1,41 +1,44 @@
 <script>
-    import { afterUpdate, onMount } from 'svelte';
+    import { onMount } from 'svelte';
     import Chart from 'chart.js/auto';
-    import * as Utils from '../../chartUtils.js';
     import ToggleButton from '../home/ToggleButton.svelte';
-    import {
-        weeklyCategoryData,
-        weeklyWaterData,
-        weeklyCaloriesData,
-        monthlyCategoryData,
-        monthlyWaterData,
-        monthlyCaloriesData,
-    } from '../../myCharts.js';
+    import { getStatsForCharts } from '../../myCharts.js';
 
     let isMonthly = false;
 
     let elCategory = null;
-    let elWater = null;
+    let elWaterintake = null;
     let elCalories = null;
 
     let chartCategory = null;
-    let chartWater = null;
+    let chartWaterintake = null;
     let chartCalories = null;
+
+    let statsData = null;
+
+    let isCategoryChartHidden = false;
 
     onMount(() => {
         chartCategory = new Chart(elCategory, {
-            type: 'line',
+            type: 'doughnut',
             data: {
                 labels: [],
                 datasets: [],
             },
         });
 
-        chartWater = new Chart(elWater, {
-            type: 'line',
+        chartWaterintake = new Chart(elWaterintake, {
+            type: 'bar',
             data: {
                 labels: [],
                 datasets: [],
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                    },
+                },
             },
         });
 
@@ -45,70 +48,61 @@
                 labels: [],
                 datasets: [],
             },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                    },
+                },
+            },
         });
 
-        /*if (isMonthly) {
-            monthlyCategoryChart = new Chart(monthlyCategory, {
-                type: 'line',
-                data: monthlyCategoryData,
-            });
-
-            monthlyWaterChart = new Chart(monthlyWater, {
-                type: 'line',
-                data: monthlyWaterData,
-            });
-
-            monthlyCaloriesChart = new Chart(monthlyCalories, {
-                type: 'line',
-                data: monthlyCaloriesData,
-            });
-        } else {
-            weeklyCategoryChart = new Chart(elCategory, {
-                type: 'line',
-                data: weeklyCategoryData,
-            });
-
-            weeklyWaterChart = new Chart(elWater, {
-                type: 'line',
-                data: weeklyWaterData,
-            });
-
-            weeklyCaloriesChart = new Chart(elCalories, {
-                type: 'line',
-                data: weeklyCaloriesData,
-            });
-        }*/
+        getStatsForCharts().then((data) => {
+            statsData = data;
+        });
     });
 
     function updateCharts() {
         if (
             chartCategory === null ||
-            chartWater === null ||
-            chartCalories === null
+            chartWaterintake === null ||
+            chartCalories === null ||
+            statsData === null
         ) {
             return;
         }
 
+        isCategoryChartHidden = false;
+
         if (isMonthly) {
-            chartCategory.data = monthlyCategoryData;
-            chartWater.data = monthlyWaterData;
-            chartCalories.data = monthlyCaloriesData;
+            if (statsData.monthlyCategoryData.labels.length === 0) {
+                isCategoryChartHidden = true;
+            }
+
+            chartCategory.data = statsData.monthlyCategoryData;
+            chartWaterintake.data = statsData.monthlyWaterintakeData;
+            chartCalories.data = statsData.monthlyCaloriesData;
         } else {
-            chartCategory.data = weeklyCategoryData;
-            chartWater.data = weeklyWaterData;
-            chartCalories.data = weeklyCaloriesData;
+            if (statsData.weeklyCategoryData.labels.length === 0) {
+                isCategoryChartHidden = true;
+            }
+
+            chartCategory.data = statsData.weeklyCategoryData;
+            chartWaterintake.data = statsData.weeklyWaterintakeData;
+            chartCalories.data = statsData.weeklyCaloriesData;
         }
 
         chartCategory.update();
-        chartWater.update();
+        chartWaterintake.update();
         chartCalories.update();
     }
 
     $: {
         isMonthly;
         chartCategory;
-        chartWater;
+        chartWaterintake;
         chartCalories;
+        statsData;
 
         updateCharts();
     }
@@ -121,9 +115,10 @@
 
     <div class="charts-scroll">
         <div class="charts-container">
-            <canvas bind:this={elCategory}></canvas>
-            <canvas bind:this={elWater}></canvas>
+            <canvas bind:this={elWaterintake}></canvas>
             <canvas bind:this={elCalories}></canvas>
+            <canvas bind:this={elCategory} class:hidden={isCategoryChartHidden}
+            ></canvas>
         </div>
     </div>
 </div>
@@ -158,5 +153,10 @@
         background-color: #f0f0f0;
         border-radius: 5px;
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        padding: 10px;
+    }
+
+    .hidden {
+        display: none !important;
     }
 </style>

@@ -1,7 +1,7 @@
 from pydantic import BaseModel, field_validator, EmailStr
 from pydantic_core.core_schema import FieldValidationInfo
 from datetime import datetime, date
-from typing import Optional, List
+from typing import Optional, List, Dict
 from fastapi import HTTPException
 from .models import TimeCategory
 
@@ -161,3 +161,14 @@ class UserSettingsPhoto(BaseModel):
 
 class UserWeight(BaseModel):
     weight: float
+    
+
+class UserStatsBase(BaseModel):
+    category: Dict[str, int]
+    water_intake: List[float]
+    calories: List[List[float]]
+    
+
+class UserStatsResponse(BaseModel):
+    weekly: UserStatsBase
+    monthly: UserStatsBase
