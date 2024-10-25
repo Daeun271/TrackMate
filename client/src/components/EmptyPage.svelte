@@ -9,16 +9,18 @@
 
     export let text1;
     export let text2;
-    export let imageUrl;
+    export let imageUrl = null;
 </script>
 
 <div class="empty-container">
-    <div class="empty-container-bg-container">
-        <div
-            class="empty-container-bg"
-            style="background:url({imageUrl}) center/cover no-repeat;"
-        ></div>
-    </div>
+    {#if imageUrl}
+        <div class="empty-container-bg-container">
+            <div
+                class="empty-container-bg"
+                style="background:url({imageUrl}) center/cover no-repeat;"
+            ></div>
+        </div>
+    {/if}
     <div class="empty-content">
         <p>{text1}</p>
         <p>{text2}</p>
