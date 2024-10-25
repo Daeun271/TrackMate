@@ -181,7 +181,7 @@
     let activity = null;
 
     function displayExercise(exercise) {
-        activity = exercise;
+        activity = structuredClone(exercise);
         isAdding = false;
         isModalOpen = true;
     }
