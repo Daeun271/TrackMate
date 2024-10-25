@@ -66,11 +66,11 @@ export async function userLogin(email, password) {
 }
 
 export async function userLogoutFromCurrentDevice() {
-    await request('GET', 'user/logout_current_device');
+    await request('GET', 'user/logout/current_device');
 }
 
 export async function userLogoutFromAllDevices() {
-    await request('GET', 'user/logout_all_devices');
+    await request('GET', 'user/logout/all_devices');
 }
 
 export async function addWaterIntake(volume, createdAt) {
@@ -81,7 +81,7 @@ export async function addWaterIntake(volume, createdAt) {
 }
 
 export async function getWaterIntakesTotal(dateTime) {
-    return await request('POST', 'user/water_intakes/get_total_volume', {
+    return await request('POST', 'user/water_intakes/get', {
         date_time: dateTime,
     });
 }
@@ -96,14 +96,14 @@ export async function addFoodIntake(name, calories, consumedAt, timeCategory) {
 }
 
 export async function getFoodIntakesTotal(startDate, endDate) {
-    return await request('POST', 'user/food_intakes/get_food_intakes', {
+    return await request('POST', 'user/food_intakes/get', {
         start_date: startDate,
         end_date: endDate,
     });
 }
 
 export async function searchFoodIntakes(searchDate) {
-    return await request('POST', 'user/food_intakes/search_food_intakes', {
+    return await request('POST', 'user/food_intakes/search', {
         search_date: searchDate,
     });
 }
@@ -170,7 +170,7 @@ export async function addExercise(
 }
 
 export async function getExercisesTotal(startDate, endDate) {
-    return await request('POST', 'user/exercises/get_exercises', {
+    return await request('POST', 'user/exercises/get', {
         start_date: startDate,
         end_date: endDate,
     });
@@ -212,4 +212,58 @@ export async function getUserWeight() {
 
 export async function getStats() {
     return await request('GET', 'user/stats/get');
+}
+
+export async function createGroup(name) {
+    return await request('POST', 'user/groups/create', {
+        group_name: name,
+    });
+}
+
+export async function getGroups() {
+    return await request('GET', 'user/groups/get');
+}
+
+export async function getMembers(groupId) {
+    return await request('POST', 'user/groups/members/get', {
+        id: groupId,
+    });
+}
+
+export async function createPost(groupId, title, content, createdAt) {
+    return await request('POST', 'user/groups/posts/create', {
+        id: groupId,
+        title,
+        content,
+        created_at: createdAt,
+    });
+}
+
+export async function getPosts(groupId, startDate, endDate) {
+    return await request('POST', 'user/groups/posts/get', {
+        id: groupId,
+        start_date: startDate,
+        end_date: endDate,
+    });
+}
+
+export async function searchPosts(groupId, searchDate) {
+    return await request('POST', 'user/groups/posts/search', {
+        id: groupId,
+        search_date: searchDate,
+    });
+}
+
+export async function updatePost(postId, title, content) {
+    return await request('POST', 'user/groups/posts/update', {
+        id: postId,
+        title,
+        content,
+    });
+}
+
+export async function deletePost(postId) {
+    await request('Delete', 'user/groups/posts/delete', {
+        id: postId,
+    });
 }
