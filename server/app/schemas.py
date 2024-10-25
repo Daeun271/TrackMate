@@ -61,7 +61,7 @@ class FoodIntakeForDateRangeResponse(BaseModel):
     foods: List[FoodIntakeGetResponse]
 
 
-class FoodIntakeSearchRequest(BaseModel):
+class SearchRequest(BaseModel):
     search_date: date
 
 
@@ -148,15 +148,6 @@ class UserRegister(User):
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
-
-
-class UserSettingsShareStatus(BaseModel):
-    is_shared_water_intake: bool = False
-    is_shared_food_intake: bool = False
-
-
-class UserSettingsPhoto(BaseModel):
-    photo: bytes
     
 
 class UserWeight(BaseModel):
@@ -172,3 +163,68 @@ class UserStatsBase(BaseModel):
 class UserStatsResponse(BaseModel):
     weekly: UserStatsBase
     monthly: UserStatsBase
+
+
+class GroupName(BaseModel):
+    name: str
+
+
+class GroupId(BaseModel):
+    id: int
+
+
+class GroupSchema(GroupName, GroupId):
+    pass
+
+
+class GroupsGetResponse(BaseModel):
+    groups: List[GroupSchema]
+
+
+class PostBase(BaseModel):
+    title: str
+    content: str
+    created_at: datetime
+
+
+class PostCreateRequest(GroupId, PostBase):
+    pass
+
+
+class PostGetBase(PostBase):
+    id: int
+    user_name: str
+
+
+class PostGetResponseBase(PostGetBase):
+    is_user: bool = False
+
+
+class PostCreateResponse(PostGetBase):
+    pass
+
+
+class PostsGetRequest(GroupId, DateRangeRequest):
+    pass
+
+
+class PostsSearchRequest(GroupId, SearchRequest):
+    pass
+
+
+class PostsGetResponse(BaseModel):
+    posts: List[PostGetResponseBase]
+
+
+class PostUpdateRequest(BaseModel):
+    id: int
+    title: str
+    content: str
+
+
+class PostUpdateResponse(PostCreateResponse):
+    pass
+
+
+class PostDeleteRequest(BaseModel):
+    id: int

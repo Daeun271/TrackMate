@@ -15,6 +15,8 @@ app = FastAPI()
 origins = [
     "http://localhost:8080",
     "http://localhost:5173",
+    "http://127.0.0.1:8080",
+    "http://127.0.0.1:5173",
     "http://192.168.10.29:8000",
     "http://192.168.10.29:5173",
 ]
@@ -96,12 +98,12 @@ def login_user(user: schemas.UserLogin, db: Session = Depends(get_db)):
     return schemas.Session(key=session_key)
 
 
-@app.get("/user/logout_current_device")
+@app.get("/user/logout/current_device")
 def logout_user_from_current_device(request: Request, db: Session = Depends(get_db)):
     crud.logout_user_from_current_device(db, session_key=request.headers.get('Authorization'))
     
 
-@app.get("/user/logout_all_devices")
+@app.get("/user/logout/all_devices")
 def logout_user_from_all_devices(request: Request, db: Session = Depends(get_db)):
     crud.logout_user_from_all_devices(db, user_id=request.state.user_id)
 
@@ -114,16 +116,6 @@ def read_user(request: Request, db: Session = Depends(get_db)):
     return db_user
 
 
-@app.put("/user/settings/share_status")
-def update_user_settings(user: schemas.UserSettingsShareStatus, request: Request, db: Session = Depends(get_db)):
-    crud.update_user_share_status(db=db, user=user, user_id=request.state.user_id)
-
-
-@app.put("/user/settings/photo")
-def update_user_photo(user: schemas.UserSettingsPhoto, request: Request, db: Session = Depends(get_db)):
-    crud.update_user_photo(db=db, user=user, user_id=request.state.user_id)
-
-
 @app.post("/user/water_intakes/create")
 def create_water_intake(
     water_intake: schemas.WaterIntake, request: Request, db: Session = Depends(get_db)
@@ -131,7 +123,7 @@ def create_water_intake(
     crud.create_water_intake(db=db, water_intake=water_intake, user_id=request.state.user_id)
 
 
-@app.post("/user/water_intakes/get_total_volume", response_model=schemas.WaterIntakeTotalForDateResponse)
+@app.post("/user/water_intakes/get", response_model=schemas.WaterIntakeTotalForDateResponse)
 def get_total_water_intake_by_user_id_and_date(water_intake_total_request: schemas.WaterIntakeTotalForDateRequest, request: Request, db: Session = Depends(get_db)):
     return crud.get_total_water_intakes_by_user_id_and_date(db, water_intake_total_request=water_intake_total_request, user_id=request.state.user_id)
 
@@ -143,14 +135,14 @@ def create_food_intake(
     return crud.create_food_intake(db=db, food_intake=food_intake, user_id=request.state.user_id)
 
 
-@app.post("/user/food_intakes/get_food_intakes", response_model=schemas.FoodIntakeForDateRangeResponse)
+@app.post("/user/food_intakes/get", response_model=schemas.FoodIntakeForDateRangeResponse)
 def get_food_intakes_by_user_id_and_date_range(food_intakes_request: schemas.DateRangeRequest, request: Request, db: Session = Depends(get_db)):
     return crud.get_food_intakes_by_user_id_and_date_range(db, food_intakes_request=food_intakes_request, user_id=request.state.user_id)
 
 
-@app.post("/user/food_intakes/search_food_intakes", response_model=schemas.FoodIntakeForDateRangeResponse)
-def search_food_intakes(food_intakes_request: schemas.FoodIntakeSearchRequest, request: Request, db: Session = Depends(get_db)):
-    return crud.get_food_intakes(db, food_intakes_request=food_intakes_request, user_id=request.state.user_id)
+@app.post("/user/food_intakes/search", response_model=schemas.FoodIntakeForDateRangeResponse)
+def search_food_intakes(food_intakes_request: schemas.SearchRequest, request: Request, db: Session = Depends(get_db)):
+    return crud.search_food_intakes(db, food_intakes_request=food_intakes_request, user_id=request.state.user_id)
 
 
 @app.post("/user/food_intakes/update")
@@ -215,7 +207,7 @@ def create_exercise(
     return crud.create_exercise(db=db, exercise=exercise, user_id=request.state.user_id)
 
 
-@app.post("/user/exercises/get_exercises", response_model=schemas.ExerciseForDateRangeResponse)
+@app.post("/user/exercises/get", response_model=schemas.ExerciseForDateRangeResponse)
 def get_exercises_by_user_id_and_date_range(exercises_request: schemas.DateRangeRequest, request: Request, db: Session = Depends(get_db)):
     return crud.get_exercises_by_user_id_and_date_range(db, exercises_request=exercises_request, user_id=request.state.user_id)
 
@@ -256,3 +248,43 @@ def get_user_stats(request: Request, db: Session = Depends(get_db)):
     monthly_calories_data = crud.get_monthly_calories_data(db, user_id=request.state.user_id)
     
     return schemas.UserStatsResponse(weekly=schemas.UserStatsBase(category=weekly_category_data, water_intake=weekly_water_intake_data, calories=weekly_calories_data), monthly=schemas.UserStatsBase(category=monthly_category_data, water_intake=monthly_water_intake_data, calories=monthly_calories_data))
+
+
+@app.post("/user/groups/create", response_model=schemas.GroupSchema)
+def create_user_group(create_request: schemas.GroupName, request: Request, db: Session = Depends(get_db)):
+    return crud.create_user_group(db, user_id=request.state.user_id, name=create_request.name)
+
+
+@app.get("/user/groups/get", response_model=schemas.GroupsGetResponse)
+def get_user_groups(request: Request, db: Session = Depends(get_db)):
+    return crud.get_user_groups(db, user_id=request.state.user_id)
+
+
+@app.post("/user/groups/members/get")
+def get_group_members(get_request: schemas.GroupId, request: Request, db: Session = Depends(get_db)):
+    return crud.get_group_members(db, user_id= request.state.user_id, group_id=get_request.id)
+
+
+@app.post("/user/groups/posts/create", response_model=schemas.PostCreateResponse)
+def create_group_post(post_create_request: schemas.PostCreateRequest, request: Request, db: Session = Depends(get_db)):
+    return crud.create_group_post(db, post_create_request=post_create_request, user_id=request.state.user_id)
+
+
+@app.post("/user/groups/posts/get", response_model=schemas.PostsGetResponse)
+def get_group_posts(get_posts_request: schemas.PostsGetRequest, request: Request, db: Session = Depends(get_db)):
+    return crud.get_group_posts_by_group_id_and_date_range(db, get_posts_request=get_posts_request, user_id=request.state.user_id)
+
+
+@app.post("/user/groups/posts/search", response_model=schemas.PostsGetResponse)
+def search_group_posts(search_posts_request: schemas.PostsSearchRequest, request: Request, db: Session = Depends(get_db)):
+    return crud.search_group_posts(db, search_posts_request=search_posts_request, user_id=request.state.user_id)
+
+
+@app.post("/user/groups/posts/update", response_model=schemas.PostUpdateResponse)
+def update_group_post(post_update_request: schemas.PostUpdateRequest, db: Session = Depends(get_db)):
+    return crud.update_group_post(db, post_update_request=post_update_request)
+
+
+@app.delete("/user/groups/posts/delete")
+def delete_group_post(post_delete_request: schemas.PostDeleteRequest, db: Session = Depends(get_db)):
+    crud.delete_group_post(db, post_delete_request=post_delete_request)

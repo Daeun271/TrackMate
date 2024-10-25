@@ -2,6 +2,8 @@ from sqlalchemy.orm import Session
 from sqlalchemy.sql import func
 from . import models, schemas
 import bcrypt
+import random
+import string
 from datetime import timedelta, datetime
 
 def get_user(db: Session, user_id: int):
@@ -38,23 +40,6 @@ def logout_user_from_all_devices(db: Session, user_id: int):
     db.commit()
 
 
-def update_user_share_status(db: Session, user: schemas.UserSettingsShareStatus, user_id: int):
-    db_user = db.query(models.User).filter(models.User.id == user_id).first()
-    if db_user is None:
-        return
-    db_user.is_shared_water_intake = user.is_shared_water_intake
-    db_user.is_shared_food_intake = user.is_shared_food_intake
-    db.commit()
-
-
-def update_user_photo(db: Session, user: schemas.UserSettingsPhoto, user_id: int):
-    db_user = db.query(models.User).filter(models.User.id == user_id).first()
-    if db_user is None:
-        return
-    db_user.photo = user.photo
-    db.commit()
-
-
 def get_total_water_intakes_by_user_id_and_date(db: Session, water_intake_total_request: schemas.WaterIntakeTotalForDateRequest, user_id: int):
     total_volume = db.query(func.sum(models.WaterIntake.volume)).filter(models.WaterIntake.user_id == user_id, func.Date(models.WaterIntake.created_at) == func.Date(water_intake_total_request.date_time)).scalar()
     
@@ -77,7 +62,7 @@ def get_food_intakes_by_user_id_and_date_range(db: Session, food_intakes_request
     )
 
 
-def get_food_intakes(db: Session, food_intakes_request: schemas.FoodIntakeSearchRequest, user_id: int):
+def search_food_intakes(db: Session, food_intakes_request: schemas.SearchRequest, user_id: int):
     dateRow = db.query(models.FoodIntake.consumed_at).filter(models.FoodIntake.user_id == user_id, models.FoodIntake.consumed_at < food_intakes_request.search_date).order_by(models.FoodIntake.consumed_at.desc()).first()
     if dateRow is None:
         return schemas.FoodIntakeForDateRangeResponse(foods=[])
@@ -263,3 +248,100 @@ def get_weekly_calories_data(db: Session, user_id: int):
 
 def get_monthly_calories_data(db: Session, user_id: int):
     return get_calories_data(db, user_id, get_monthly_ranges())
+
+
+def generate_group_code(db: Session):
+    while True:
+        group_code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=10))
+        group = db.query(models.Group).filter(models.Group.group_code == group_code).first()
+        if group is None:
+            return group_code
+
+
+def create_user_group(db: Session, user_id: int, name: str):
+    group_code = generate_group_code(db)
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    group = models.Group(name=name, group_code=group_code, members=[user])
+    db.add(group)
+    db.commit()
+    
+    return schemas.GroupSchema(id=group.id, name=group.name)
+
+
+def get_user_groups(db: Session, user_id: int):
+    user_groups = db.query(models.User).filter(user_id == models.User.id).first().groups
+    
+    if user_groups is None:
+        return []
+    
+    groups = []
+    for user_group in user_groups:
+        group = schemas.GroupSchema(id=user_group.id, name=user_group.name)
+        groups.append(group)
+    
+    return schemas.GroupsGetResponse(groups=groups)
+
+
+def get_group_members(db: Session, user_id: int, group_id: int):
+    group_members = db.query(models.Group).filter(models.Group.id == group_id).first().members
+    
+    if group_members is None:
+        return []
+    
+    members = []
+    for group_member in group_members:
+        if group_member.id != user_id:
+            members.append(group_member.user_name)
+    
+    return members
+
+
+def create_group_post(db: Session, user_id: int, post_create_request: schemas.PostCreateRequest):
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    group = db.query(models.Group).filter(models.Group.id == post_create_request.id).first()
+    group_post = models.Post(title=post_create_request.title, content=post_create_request.content, created_at=post_create_request.created_at, user_id=user_id, group_id=post_create_request.id, user=user, group=group)
+    db.add(group_post)
+    db.commit()
+    
+    return schemas.PostCreateResponse(title=group_post.title, content=group_post.content, created_at=group_post.created_at, id=group_post.id, user_name=user.user_name)
+
+
+def get_group_posts_by_group_id_and_date_range(db: Session, user_id: int, get_posts_request: schemas.PostsGetRequest):
+    group_posts = db.query(models.Post).filter(models.Post.group_id == get_posts_request.id, models.Post.created_at >= get_posts_request.start_date, models.Post.created_at < get_posts_request.end_date).order_by(models.Post.id.desc()).all()
+    
+    if group_posts is None:
+        return []
+    
+    posts = []
+    for group_post in group_posts:
+        if group_post.user_id == user_id:
+            is_user = True
+        post = schemas.PostGetResponseBase(title=group_post.title, content=group_post.content, created_at=group_post.created_at, id=group_post.id, user_name=group_post.user.user_name, is_user=is_user)
+        posts.append(post)
+        
+    return schemas.PostsGetResponse(posts=posts)
+
+
+def search_group_posts(db: Session, user_id: int, search_posts_request: schemas.PostsSearchRequest):
+    dateRow = db.query(models.Post.created_at).filter(models.Post.group_id == search_posts_request.id, models.Post.created_at < search_posts_request.search_date).order_by(models.Post.created_at.desc()).first()
+    if dateRow is None:
+        return schemas.PostsGetResponse(posts=[])
+    date = dateRow[0]
+    today = date + timedelta(days=1)
+    last_week = date - timedelta(days=7)
+    return get_group_posts_by_group_id_and_date_range(db, user_id, schemas.PostsGetRequest(id=search_posts_request.id, start_date=last_week, end_date=today))
+
+
+def update_group_post(db: Session, post_update_request: schemas.PostUpdateRequest):
+    group_post = db.query(models.Post).filter(models.Post.id == post_update_request.id).first()
+    if group_post is None:
+        return
+    group_post.title = post_update_request.title
+    group_post.content = post_update_request.content
+    db.commit()
+    return schemas.PostUpdateResponse(title=group_post.title, content=group_post.content, created_at=group_post.created_at, id=group_post.id, user_name=group_post.user.user_name)
+
+
+def delete_group_post(db: Session, post_delete_request: schemas.PostDeleteRequest):
+    db.query(models.Post).filter(models.Post.id == post_delete_request.id).delete()
+    db.commit()
