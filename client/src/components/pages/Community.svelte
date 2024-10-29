@@ -5,10 +5,11 @@
     import PostModal from '../community/PostModal.svelte';
     import PostCreateIcon from '../community/PostCreateIcon.svelte';
     import SideBar from '../community/SideBar.svelte';
+    import InviteButton from '../community/InviteButton.svelte';
     import { onMount, afterUpdate } from 'svelte';
-    import { getGroups, searchPosts, deletePost } from '../../api';
+    import { getGroups, searchPosts, deletePost, addMember } from '../../api';
     import { formatDate } from './FoodIntake.svelte';
-    import { buttonClick } from '../../button_click';
+    import { paramsInviteCode, clearParamsInviteCode } from '../../tabs';
 
     let isModalOpen = false;
     let isPostModalOpen = false;
@@ -21,6 +22,7 @@
     let loading = false;
     let currentGroupId = null;
     let currentGroupName = null;
+    let currentGroupCode = '';
 
     async function getCurrentPosts() {
         loading = true;
@@ -47,12 +49,32 @@
         if (loading) return;
         loading = true;
 
+        let invitedGroudId = null;
+
+        if (paramsInviteCode) {
+            const groupId = await addMember(paramsInviteCode);
+            if (groupId) {
+                invitedGroudId = groupId;
+            } else {
+                alert('Invalid invite code!');
+            }
+            clearParamsInviteCode();
+        }
+
         const result = await getGroups();
         groups = result.groups;
 
         if (groups.length === 0) {
             loading = false;
             return;
+        }
+
+        if (invitedGroudId !== null) {
+            localStorage.setItem(
+                'currentGroupId',
+                JSON.stringify(invitedGroudId),
+            );
+            currentGroupId = invitedGroudId;
         }
 
         if (localStorage.getItem('currentGroupId')) {
@@ -64,10 +86,6 @@
                 JSON.stringify(currentGroupId),
             );
         }
-
-        currentGroupName = groups.find(
-            (group) => group.id === currentGroupId,
-        ).name;
 
         await getCurrentPosts();
     });
@@ -96,6 +114,14 @@
 
     $: {
         if (currentGroupId) {
+            currentGroupName = groups.find(
+                (group) => group.id === currentGroupId,
+            ).name;
+
+            currentGroupCode = groups.find(
+                (group) => group.id === currentGroupId,
+            ).code;
+
             getCurrentPostsIfNotLoading();
         }
     }
@@ -173,6 +199,12 @@
         await deletePost(post.id);
         posts = posts.filter((p) => p.id !== post.id);
     }
+
+    function addGroup(group) {
+        groups = [...groups, group];
+        localStorage.setItem('currentGroupId', JSON.stringify(group.id));
+        currentGroupId = group.id;
+    }
 </script>
 
 {#if groups.length === 0}
@@ -195,13 +227,7 @@
         <div class="content" bind:this={scrollDiv} on:scroll={loadData}>
             <div class="group-info-box">
                 <h1>{currentGroupName}</h1>
-                <button
-                    class="invite-btn"
-                    use:buttonClick
-                    on:click={() => {
-                        console.log('todo');
-                    }}>Invite Friends</button
-                >
+                <InviteButton bind:groupCode={currentGroupCode}></InviteButton>
             </div>
             {#if posts.length === 0}
                 {#if loading}
@@ -272,15 +298,22 @@
                 currentGroupId = JSON.parse(
                     localStorage.getItem('currentGroupId'),
                 );
-                currentGroupName = groups.find(
-                    (group) => group.id === currentGroupId,
-                ).name;
+                isListOpen = false;
+            }}
+            on:add={(event) => {
+                addGroup(event.detail);
+                isListOpen = false;
             }}
         ></SideBar>
     </div>
 {/if}
 
-<GroupCreateModal bind:isModalOpen></GroupCreateModal>
+<GroupCreateModal
+    bind:isModalOpen
+    on:add={(event) => {
+        addGroup(event.detail);
+    }}
+></GroupCreateModal>
 <PostModal
     bind:isPostModalOpen
     {isAdding}
@@ -339,24 +372,6 @@
 
     .group-info-box h1 {
         margin: 0 0 10px 0;
-    }
-
-    .invite-btn {
-        width: 130px;
-        height: 30px;
-        padding: 5px 20px;
-        margin-top: auto;
-        margin-bottom: auto;
-        border: none;
-        border-radius: 5px;
-        color: #000;
-        background-color: #f0f0f0;
-        appearance: none;
-        cursor: pointer;
-    }
-
-    .invite-btn:global(.clicked) {
-        background-color: #c9c7c7;
     }
 
     h1,
