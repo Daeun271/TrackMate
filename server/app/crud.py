@@ -265,18 +265,18 @@ def create_user_group(db: Session, user_id: int, name: str):
     db.add(group)
     db.commit()
     
-    return schemas.GroupSchema(id=group.id, name=group.name)
+    return schemas.GroupBase(id=group.id, name=group.name, code=group.group_code)
 
 
 def get_user_groups(db: Session, user_id: int):
     user_groups = db.query(models.User).filter(user_id == models.User.id).first().groups
     
     if user_groups is None:
-        return []
+        return schemas.GroupsGetResponse(groups=[])
     
     groups = []
     for user_group in user_groups:
-        group = schemas.GroupSchema(id=user_group.id, name=user_group.name)
+        group = schemas.GroupBase(id=user_group.id, name=user_group.name, code=user_group.group_code)
         groups.append(group)
     
     return schemas.GroupsGetResponse(groups=groups)
@@ -310,7 +310,7 @@ def get_group_posts_by_group_id_and_date_range(db: Session, user_id: int, get_po
     group_posts = db.query(models.Post).filter(models.Post.group_id == get_posts_request.id, models.Post.created_at >= get_posts_request.start_date, models.Post.created_at < get_posts_request.end_date).order_by(models.Post.id.desc()).all()
     
     if group_posts is None:
-        return []
+        return schemas.PostsGetResponse(posts=[])
     
     posts = []
     for group_post in group_posts:
@@ -335,7 +335,7 @@ def search_group_posts(db: Session, user_id: int, search_posts_request: schemas.
 def update_group_post(db: Session, post_update_request: schemas.PostUpdateRequest):
     group_post = db.query(models.Post).filter(models.Post.id == post_update_request.id).first()
     if group_post is None:
-        return
+        return None
     group_post.title = post_update_request.title
     group_post.content = post_update_request.content
     db.commit()
@@ -345,3 +345,17 @@ def update_group_post(db: Session, post_update_request: schemas.PostUpdateReques
 def delete_group_post(db: Session, post_delete_request: schemas.PostDeleteRequest):
     db.query(models.Post).filter(models.Post.id == post_delete_request.id).delete()
     db.commit()
+
+
+def add_user_to_group(db: Session, user_id: int, invitation_req: schemas.GroupForInvitationReq):
+    group = db.query(models.Group).filter(models.Group.group_code == invitation_req.group_code).first()
+    if group is None:
+        return None
+    
+    is_already_member = db.query(db.query(models.group_member).filter(models.group_member.c.group_id == group.id, models.group_member.c.user_id == user_id).exists()).scalar()
+    if not is_already_member:
+        user = db.query(models.User).filter(models.User.id == user_id).first()
+        group.members.append(user)
+        db.commit()
+    
+    return group.id

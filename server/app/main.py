@@ -19,6 +19,8 @@ origins = [
     "http://127.0.0.1:5173",
     "http://192.168.10.29:8000",
     "http://192.168.10.29:5173",
+    "http://10.55.109.3:8000",
+    "http://10.55.109.3:5173",
 ]
 
 
@@ -250,7 +252,7 @@ def get_user_stats(request: Request, db: Session = Depends(get_db)):
     return schemas.UserStatsResponse(weekly=schemas.UserStatsBase(category=weekly_category_data, water_intake=weekly_water_intake_data, calories=weekly_calories_data), monthly=schemas.UserStatsBase(category=monthly_category_data, water_intake=monthly_water_intake_data, calories=monthly_calories_data))
 
 
-@app.post("/user/groups/create", response_model=schemas.GroupSchema)
+@app.post("/user/groups/create", response_model=schemas.GroupBase)
 def create_user_group(create_request: schemas.GroupName, request: Request, db: Session = Depends(get_db)):
     return crud.create_user_group(db, user_id=request.state.user_id, name=create_request.name)
 
@@ -280,7 +282,7 @@ def search_group_posts(search_posts_request: schemas.PostsSearchRequest, request
     return crud.search_group_posts(db, search_posts_request=search_posts_request, user_id=request.state.user_id)
 
 
-@app.post("/user/groups/posts/update", response_model=schemas.PostUpdateResponse)
+@app.post("/user/groups/posts/update", response_model=Optional[schemas.PostUpdateResponse])
 def update_group_post(post_update_request: schemas.PostUpdateRequest, db: Session = Depends(get_db)):
     return crud.update_group_post(db, post_update_request=post_update_request)
 
@@ -288,3 +290,8 @@ def update_group_post(post_update_request: schemas.PostUpdateRequest, db: Sessio
 @app.delete("/user/groups/posts/delete")
 def delete_group_post(post_delete_request: schemas.PostDeleteRequest, db: Session = Depends(get_db)):
     crud.delete_group_post(db, post_delete_request=post_delete_request)
+
+
+@app.post("/user/groups/invite")
+def add_user_to_group(invitation_req: schemas.GroupForInvitationReq, request: Request, db: Session = Depends(get_db)) -> Optional[int]:
+    return crud.add_user_to_group(db, invitation_req=invitation_req, user_id=request.state.user_id)

@@ -173,12 +173,12 @@ class GroupId(BaseModel):
     id: int
 
 
-class GroupSchema(GroupName, GroupId):
-    pass
+class GroupBase(GroupName, GroupId):
+    code: str
 
 
 class GroupsGetResponse(BaseModel):
-    groups: List[GroupSchema]
+    groups: List[GroupBase]
 
 
 class PostBase(BaseModel):
@@ -228,3 +228,7 @@ class PostUpdateResponse(PostCreateResponse):
 
 class PostDeleteRequest(BaseModel):
     id: int
+
+
+class GroupForInvitationReq(BaseModel):
+    group_code: str
