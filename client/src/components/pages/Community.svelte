@@ -6,6 +6,7 @@
     import PostCreateIcon from '../community/PostCreateIcon.svelte';
     import SideBar from '../community/SideBar.svelte';
     import InviteButton from '../community/InviteButton.svelte';
+    import Comment from '../community/Comment.svelte';
     import { onMount, afterUpdate } from 'svelte';
     import { getGroups, searchPosts, deletePost, addMember } from '../../api';
     import { formatDate } from './FoodIntake.svelte';
@@ -15,6 +16,7 @@
     let isPostModalOpen = false;
     let isAdding = true;
     let isListOpen = false;
+    let isCommentOpen = false;
 
     let groups = [];
     let posts = [];
@@ -265,6 +267,9 @@
                                 src="images/icons8-bemerkungen-24.png"
                                 alt="comment"
                                 class="comment"
+                                on:click={() => {
+                                    isCommentOpen = !isCommentOpen;
+                                }}
                             />
                             <div class="post-action">
                                 <button
@@ -279,6 +284,7 @@
                                 >
                             </div>
                         </div>
+                        <Comment {isCommentOpen}></Comment>
                     </div>
                 {/each}
             {/if}
