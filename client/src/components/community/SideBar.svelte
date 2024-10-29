@@ -15,13 +15,10 @@
 
     export let groups = [];
 
-    let members = [];
+    let membersByGroupId = {};
     async function getGroupMembers(groupId) {
-        members = await getMembers(groupId);
-    }
-
-    async function addGroup(newGroup) {
-        groups = [...groups, newGroup];
+        membersByGroupId[groupId] = await getMembers(groupId);
+        membersByGroupId = { ...membersByGroupId };
     }
 </script>
 
@@ -49,7 +46,7 @@
                     <GroupList
                         on:open={() => getGroupMembers(group.id)}
                         groupName={group.name}
-                        {members}
+                        members={membersByGroupId[group.id] || []}
                         on:move={() => {
                             localStorage.setItem(
                                 'currentGroupId',
@@ -68,7 +65,8 @@
     </div>
 </div>
 
-<Modal bind:isModalOpen on:add={(event) => addGroup(event.detail)}></Modal>
+<Modal bind:isModalOpen on:add={(event) => dispatch('add', event.detail)}
+></Modal>
 
 <svelte:window
     on:keydown={(e) => e.key === 'Escape' && isListOpen && onClick()}
