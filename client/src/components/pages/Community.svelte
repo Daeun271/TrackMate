@@ -241,6 +241,7 @@
                         text1="No posts yet!"
                         text2="Create a post and share it with your friends!"
                         on:modalClick={() => {
+                            isAdding = true;
                             isPostModalOpen = true;
                         }}
                     ></EmptyPage>
@@ -249,6 +250,7 @@
                 <PostCreateIcon
                     text="Add a post"
                     on:modalClick={() => {
+                        isAdding = true;
                         isPostModalOpen = true;
                     }}
                 ></PostCreateIcon>

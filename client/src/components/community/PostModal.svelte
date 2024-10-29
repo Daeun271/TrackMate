@@ -80,6 +80,8 @@
         await deletePost(post.postId);
         dispatch('delete', post);
         isPostModalOpen = false;
+        errorMessage = '';
+        post = getInitialInputs();
     }
 </script>
 
