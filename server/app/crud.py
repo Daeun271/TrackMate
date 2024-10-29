@@ -359,3 +359,29 @@ def add_user_to_group(db: Session, user_id: int, invitation_req: schemas.GroupFo
         db.commit()
     
     return group.id
+
+
+def create_comment(db: Session, user_id: int, comment_create_request: schemas.CommentCreateRequest):
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    post = db.query(models.Post).filter(models.Post.id == comment_create_request.post_id).first()
+    comment = models.Comment(content=comment_create_request.content, created_at=comment_create_request.created_at, user_id=user_id, post_id=comment_create_request.post_id, user=user, post=post)
+    db.add(comment)
+    db.commit()
+    
+    return schemas.CommentCreateResponse(content=comment.content, created_at=comment.created_at, user_name=user.user_name, comment_id=comment.id, is_user=True)
+
+
+def get_comments(db: Session, user_id: int, comment_get_request: schemas.CommentsGetRequest):
+    post_comments = db.query(models.Comment).filter(models.Comment.post_id == comment_get_request.post_id).all()
+    
+    if post_comments is None:
+        return schemas.CommentsGetResponse(comments=[])
+    
+    comments = []
+    for post_comment in post_comments:
+        if post_comment.user_id == user_id:
+            is_user = True
+        comment = schemas.CommentBase(content=post_comment.content, created_at=post_comment.created_at, user_name=post_comment.user.user_name, comment_id=post_comment.id, is_user=is_user)
+        comments.append(comment)
+        
+    return schemas.CommentsGetResponse(comments=comments)

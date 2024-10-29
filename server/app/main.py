@@ -295,3 +295,13 @@ def delete_group_post(post_delete_request: schemas.PostDeleteRequest, db: Sessio
 @app.post("/user/groups/invite")
 def add_user_to_group(invitation_req: schemas.GroupForInvitationReq, request: Request, db: Session = Depends(get_db)) -> Optional[int]:
     return crud.add_user_to_group(db, invitation_req=invitation_req, user_id=request.state.user_id)
+
+
+@app.post("/user/groups/posts/comments/create")
+def create_comment(comment_create_request: schemas.CommentCreateRequest, request: Request, db: Session = Depends(get_db)):
+    return crud.create_comment(db, comment_create_request=comment_create_request, user_id=request.state.user_id)
+
+
+@app.post("/user/groups/posts/comments/get", response_model=schemas.CommentsGetResponse)
+def get_comments(comment_get_request: schemas.CommentsGetRequest, request: Request, db: Session = Depends(get_db)):
+    return crud.get_comments(db, comment_get_request=comment_get_request, user_id=request.state.user_id)

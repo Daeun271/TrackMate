@@ -232,3 +232,29 @@ class PostDeleteRequest(BaseModel):
 
 class GroupForInvitationReq(BaseModel):
     group_code: str
+
+
+class CommentBase(BaseModel):
+    content: str
+    created_at: datetime
+    user_name: str
+    comment_id: int
+    is_user: bool = False
+
+
+class CommentsGetRequest(BaseModel):
+    post_id: int
+
+
+class CommentsGetResponse(BaseModel):
+    comments: List[CommentBase]
+
+
+class CommentCreateRequest(BaseModel):
+    post_id: int
+    content: str
+    created_at: datetime
+    
+
+class CommentCreateResponse(CommentBase):
+    pass
