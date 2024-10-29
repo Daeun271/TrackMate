@@ -273,3 +273,17 @@ export async function addMember(groupCode) {
         group_code: groupCode,
     });
 }
+
+export async function createComment(postId, content, createdAt) {
+    return await request('POST', 'user/groups/posts/comments/create', {
+        post_id: postId,
+        content,
+        created_at: createdAt,
+    });
+}
+
+export async function getComments(postId) {
+    return await request('POST', 'user/groups/posts/comments/get', {
+        post_id: postId,
+    });
+}
