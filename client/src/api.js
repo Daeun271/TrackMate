@@ -1,7 +1,7 @@
 import { EventEmitter } from './event-emitter.js';
 export const unauthorizedEvent = new EventEmitter();
 
-let hostUrl = 'http://192.168.10.29:8000/';
+let hostUrl = 'http://127.0.0.1:8000/';
 
 export async function request(
     method = 'GET',
@@ -216,7 +216,7 @@ export async function getStats() {
 
 export async function createGroup(name) {
     return await request('POST', 'user/groups/create', {
-        group_name: name,
+        name: name,
     });
 }
 
@@ -265,5 +265,11 @@ export async function updatePost(postId, title, content) {
 export async function deletePost(postId) {
     await request('Delete', 'user/groups/posts/delete', {
         id: postId,
+    });
+}
+
+export async function addMember(groupCode) {
+    return await request('POST', 'user/groups/invite', {
+        group_code: groupCode,
     });
 }
