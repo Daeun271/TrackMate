@@ -383,3 +383,16 @@ def get_comments(db: Session, user_id: int, comment_get_request: schemas.Comment
         comments.append(comment)
         
     return schemas.CommentsGetResponse(comments=comments)
+
+
+def update_comment(db: Session, comment_update_request: schemas.CommentUpdateRequest):
+    comment = db.query(models.Comment).filter(models.Comment.id == comment_update_request.comment_id).first()
+    if comment is None:
+        return
+    comment.content = comment_update_request.content
+    db.commit()
+
+
+def delete_comment(db: Session, comment_delete_request: schemas.CommentDeleteRequest):
+    db.query(models.Comment).filter(models.Comment.id == comment_delete_request.comment_id).delete()
+    db.commit()

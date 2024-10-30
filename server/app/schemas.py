@@ -258,3 +258,12 @@ class CommentCreateRequest(BaseModel):
 
 class CommentCreateResponse(CommentBase):
     pass
+
+
+class CommentUpdateRequest(BaseModel):
+    comment_id: int
+    content: str
+
+
+class CommentDeleteRequest(BaseModel):
+    comment_id: int

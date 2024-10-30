@@ -305,3 +305,13 @@ def create_comment(comment_create_request: schemas.CommentCreateRequest, request
 @app.post("/user/groups/posts/comments/get", response_model=schemas.CommentsGetResponse)
 def get_comments(comment_get_request: schemas.CommentsGetRequest, request: Request, db: Session = Depends(get_db)):
     return crud.get_comments(db, comment_get_request=comment_get_request, user_id=request.state.user_id)
+
+
+@app.post("/user/groups/posts/comments/update")
+def update_comment(comment_update_request: schemas.CommentUpdateRequest, db: Session = Depends(get_db)):
+    crud.update_comment(db, comment_update_request=comment_update_request)
+
+
+@app.delete("/user/groups/posts/comments/delete")
+def delete_comment(comment_delete_request: schemas.CommentDeleteRequest, db: Session = Depends(get_db)):
+    crud.delete_comment(db, comment_delete_request=comment_delete_request)
