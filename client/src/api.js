@@ -287,3 +287,16 @@ export async function getComments(postId) {
         post_id: postId,
     });
 }
+
+export async function updateComment(commentId, content) {
+    await request('POST', 'user/groups/posts/comments/update', {
+        comment_id: commentId,
+        content,
+    });
+}
+
+export async function deleteComment(commentId) {
+    await request('Delete', 'user/groups/posts/comments/delete', {
+        comment_id: commentId,
+    });
+}
