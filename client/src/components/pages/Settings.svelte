@@ -1,38 +1,38 @@
 <script>
-    import LogOut from '../auth/LogOut.svelte';
+    import UserNameModal from '../../settings/UserNameModal.svelte';
+    import EmailModal from '../../settings/EmailModal.svelte';
+    import PasswordModal from '../../settings/PasswordModal.svelte';
+    import LogOutModal from '../../settings/LogOutModal.svelte';
+    import DeleteAccountModal from '../../settings/DeleteAccountModal.svelte';
 
-    let currentComponent = null;
+    let isUserNameModalOpen = false;
+    let isEmailModalOpen = false;
+    let isPasswordModalOpen = false;
+    let isLogOutModalOpen = false;
+    let isDeleteAccountModalOpen = false;
 </script>
 
 <div class="background">
     <div class="wrapper">
-        <button on:click={() => (currentComponent = 'Update Profile')}
-            >Update Profile</button
+        <button on:click={() => (isUserNameModalOpen = true)}
+            >Change user name</button
         >
-        <button on:click={() => (currentComponent = 'Set status')}
-            >Set status</button
-        >
-        <button on:click={() => (currentComponent = 'Change password')}
+        <button on:click={() => (isEmailModalOpen = true)}>Change email</button>
+        <button on:click={() => (isPasswordModalOpen = true)}
             >Change password</button
         >
-        <button on:click={() => (currentComponent = 'Log out')}>Log out</button>
-        <button on:click={() => (currentComponent = 'Delete account')}
+        <button on:click={() => (isLogOutModalOpen = true)}>Log out</button>
+        <button on:click={() => (isDeleteAccountModalOpen = true)}
             >Delete account</button
         >
     </div>
-
-    {#if currentComponent === 'Update Profile'}
-        <h1>Update Profile</h1>
-    {:else if currentComponent === 'Set status'}
-        <h1>Set status</h1>
-    {:else if currentComponent === 'Change password'}
-        <h1>Change password</h1>
-    {:else if currentComponent === 'Log out'}
-        <LogOut />
-    {:else if currentComponent === 'Delete account'}
-        <h1>Delete account</h1>
-    {/if}
 </div>
+
+<UserNameModal bind:isOpen={isUserNameModalOpen}></UserNameModal>
+<EmailModal bind:isOpen={isEmailModalOpen}></EmailModal>
+<PasswordModal bind:isOpen={isPasswordModalOpen}></PasswordModal>
+<LogOutModal bind:isOpen={isLogOutModalOpen}></LogOutModal>
+<DeleteAccountModal bind:isOpen={isDeleteAccountModalOpen}></DeleteAccountModal>
 
 <style>
     .background {
