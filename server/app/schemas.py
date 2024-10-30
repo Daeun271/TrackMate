@@ -201,7 +201,7 @@ class PostGetResponseBase(PostGetBase):
 
 
 class PostCreateResponse(PostGetBase):
-    pass
+    is_user: bool = True
 
 
 class PostsGetRequest(GroupId, DateRangeRequest):

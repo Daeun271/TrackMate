@@ -303,7 +303,7 @@ def create_group_post(db: Session, user_id: int, post_create_request: schemas.Po
     db.add(group_post)
     db.commit()
     
-    return schemas.PostCreateResponse(title=group_post.title, content=group_post.content, created_at=group_post.created_at, id=group_post.id, user_name=user.user_name)
+    return schemas.PostCreateResponse(title=group_post.title, content=group_post.content, created_at=group_post.created_at, id=group_post.id, user_name=user.user_name, is_user=True)
 
 
 def get_group_posts_by_group_id_and_date_range(db: Session, user_id: int, get_posts_request: schemas.PostsGetRequest):
@@ -313,9 +313,9 @@ def get_group_posts_by_group_id_and_date_range(db: Session, user_id: int, get_po
         return schemas.PostsGetResponse(posts=[])
     
     posts = []
+    is_user = False
     for group_post in group_posts:
-        if group_post.user_id == user_id:
-            is_user = True
+        is_user = group_post.user_id == user_id
         post = schemas.PostGetResponseBase(title=group_post.title, content=group_post.content, created_at=group_post.created_at, id=group_post.id, user_name=group_post.user.user_name, is_user=is_user)
         posts.append(post)
         
@@ -377,6 +377,7 @@ def get_comments(db: Session, user_id: int, comment_get_request: schemas.Comment
     if post_comments is None:
         return schemas.CommentsGetResponse(comments=[])
     
+    is_user = False
     comments = []
     for post_comment in post_comments:
         if post_comment.user_id == user_id:
