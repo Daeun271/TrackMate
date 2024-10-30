@@ -56,7 +56,7 @@ function validateFields(fields) {
     }
 }
 
-function validateEmail(email) {
+export function validateEmail(email) {
     const emailRegex =
         /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
     if (!email.match(emailRegex)) {
@@ -64,7 +64,7 @@ function validateEmail(email) {
     }
 }
 
-function validatePassword(password) {
+export function validatePassword(password) {
     if (password.length < 8) {
         throw new Error('Password must be at least 8 characters long');
     } else if (!password.match(/[0-9]/)) {
