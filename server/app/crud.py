@@ -343,6 +343,7 @@ def update_group_post(db: Session, post_update_request: schemas.PostUpdateReques
 
 def delete_group_post(db: Session, post_delete_request: schemas.PostDeleteRequest):
     db.query(models.Post).filter(models.Post.id == post_delete_request.id).delete()
+    db.query(models.Comment).filter(models.Comment.post_id == post_delete_request.id).delete()
     db.commit()
 
 
