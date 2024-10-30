@@ -1,21 +1,74 @@
 <script>
     import { buttonClick } from '../../button_click';
+    import { createComment, getComments } from '../../api';
+    import { formatDate } from '../pages/FoodIntake.svelte';
+
+    let today = formatDate(new Date());
 
     let loading = false;
-    let comments = [
-        {
-            username: 'John Doe',
-            date: '2021-09-01',
-            text: 'This is a comment',
-        },
-        {
-            username: 'Jane Doe',
-            date: '2021-09-02',
-            text: 'This is another comment',
-        },
-    ];
+    let errorMessage = '';
+    let commentContent = '';
+    let comments = [];
 
     export let isCommentOpen = false;
+    export let postId = null;
+
+    async function addComment() {
+        if (loading) return;
+        loading = true;
+
+        if (commentContent.trim() === '') {
+            errorMessage = 'Please enter a comment';
+            loading = false;
+            return;
+        }
+
+        try {
+            const newComment = await createComment(
+                postId,
+                commentContent,
+                today,
+            );
+            comments = [newComment, ...comments];
+        } catch (error) {
+            errorMessage = 'An error occurred. Please try again later.';
+            loading = false;
+            return;
+        }
+
+        loading = false;
+        commentContent = '';
+        errorMessage = '';
+    }
+
+    async function fetchComments(postId) {
+        if (loading) return;
+        loading = true;
+
+        try {
+            const res = await getComments(postId);
+            comments = res.comments;
+        } catch (error) {
+            errorMessage = 'An error occurred. Please try again later.';
+            loading = false;
+            return;
+        }
+
+        loading = false;
+        errorMessage = '';
+    }
+
+    $: {
+        if (isCommentOpen) {
+            fetchComments(postId);
+        }
+    }
+
+    $: {
+        if (isCommentOpen === false) {
+            errorMessage = '';
+        }
+    }
 </script>
 
 {#if isCommentOpen}
@@ -27,20 +80,26 @@
         <div class="comment-wrapper">
             <div class="input-box-wrapper">
                 <div class="input-box">
-                    <input type="text" placeholder="Add a comment" />
-                    <button use:buttonClick>Post</button>
+                    <input
+                        type="text"
+                        placeholder="Add a comment"
+                        bind:value={commentContent}
+                    />
+                    <button use:buttonClick on:click={addComment}>Post</button>
                 </div>
-                <p class="error-message"></p>
+                <p class="error-message">{errorMessage}</p>
             </div>
 
             {#if comments.length}
                 {#each comments as comment}
                     <div class="comment">
                         <div class="comment-header">
-                            <p>{comment.username}</p>
-                            <p class="comment-date">{comment.date}</p>
+                            <p>{comment.user_name}</p>
+                            <p class="comment-date">
+                                {comment.created_at.split('T')[0]}
+                            </p>
                         </div>
-                        <p>{comment.text}</p>
+                        <p>{comment.content}</p>
                     </div>
                 {/each}
             {/if}

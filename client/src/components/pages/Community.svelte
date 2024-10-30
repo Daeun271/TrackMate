@@ -207,6 +207,13 @@
         localStorage.setItem('currentGroupId', JSON.stringify(group.id));
         currentGroupId = group.id;
     }
+
+    let postIdForCurrentCommentOpen = null;
+
+    function toggleComments(postId) {
+        postIdForCurrentCommentOpen =
+            postIdForCurrentCommentOpen === postId ? null : postId;
+    }
 </script>
 
 {#if groups.length === 0}
@@ -269,9 +276,7 @@
                                 src="images/icons8-bemerkungen-24.png"
                                 alt="comment"
                                 class="comment"
-                                on:click={() => {
-                                    isCommentOpen = !isCommentOpen;
-                                }}
+                                on:click={() => toggleComments(post.id)}
                             />
                             <div class="post-action">
                                 <button
@@ -286,7 +291,11 @@
                                 >
                             </div>
                         </div>
-                        <Comment {isCommentOpen}></Comment>
+                        <Comment
+                            isCommentOpen={postIdForCurrentCommentOpen ===
+                                post.id}
+                            bind:postId={post.id}
+                        />
                     </div>
                 {/each}
             {/if}
