@@ -16,7 +16,6 @@
     let isPostModalOpen = false;
     let isAdding = true;
     let isListOpen = false;
-    let isCommentOpen = false;
 
     let groups = [];
     let posts = [];
@@ -278,18 +277,20 @@
                                 class="comment"
                                 on:click={() => toggleComments(post.id)}
                             />
-                            <div class="post-action">
-                                <button
-                                    class="icon-button"
-                                    on:click={() => displayPost(post)}
-                                    >⚙️</button
-                                >
-                                <button
-                                    class="icon-button"
-                                    on:click={async () => deleteGroupPost(post)}
-                                    >🚮</button
-                                >
-                            </div>
+                            {#if post.is_user}
+                                <div class="post-action">
+                                    <button
+                                        class="icon-button"
+                                        on:click={() => displayPost(post)}
+                                        >⚙️</button
+                                    >
+                                    <button
+                                        class="icon-button"
+                                        on:click={async () =>
+                                            deleteGroupPost(post)}>🚮</button
+                                    >
+                                </div>
+                            {/if}
                         </div>
                         <Comment
                             isCommentOpen={postIdForCurrentCommentOpen ===

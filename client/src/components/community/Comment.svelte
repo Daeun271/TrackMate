@@ -1,13 +1,21 @@
 <script>
     import { buttonClick } from '../../button_click';
-    import { createComment, getComments } from '../../api';
+    import {
+        createComment,
+        getComments,
+        updateComment,
+        deleteComment,
+    } from '../../api';
     import { formatDate } from '../pages/FoodIntake.svelte';
 
     let today = formatDate(new Date());
 
     let loading = false;
     let errorMessage = '';
+    let updateErrorMessage = '';
+    let editingCommentId = null;
     let commentContent = '';
+    let newCommentsbyId = {};
     let comments = [];
 
     export let isCommentOpen = false;
@@ -69,6 +77,45 @@
             errorMessage = '';
         }
     }
+
+    function displayEditBox(comment) {
+        editingCommentId =
+            editingCommentId === comment.comment_id ? null : comment.comment_id;
+        newCommentsbyId[comment.comment_id] = comment.content;
+        updateErrorMessage = '';
+    }
+
+    async function uploadComment(comment) {
+        const newComment = newCommentsbyId[comment.comment_id];
+        if (newComment.trim() === '') {
+            updateErrorMessage = 'Please enter a comment';
+            return;
+        }
+
+        if (comment.content === newComment) {
+            updateErrorMessage = 'No changes detected';
+            return;
+        }
+
+        try {
+            await updateComment(comment.comment_id, newComment);
+        } catch (error) {
+            updateErrorMessage = 'An error occurred. Please try again later.';
+            return;
+        }
+
+        comment.content = newComment;
+
+        updateErrorMessage = '';
+        editingCommentId = null;
+    }
+
+    async function removeComment(commentId) {
+        await deleteComment(commentId);
+        comments = comments.filter(
+            (comment) => comment.comment_id !== commentId,
+        );
+    }
 </script>
 
 {#if isCommentOpen}
@@ -94,12 +141,49 @@
                 {#each comments as comment}
                     <div class="comment">
                         <div class="comment-header">
-                            <p>{comment.user_name}</p>
-                            <p class="comment-date">
-                                {comment.created_at.split('T')[0]}
-                            </p>
+                            <div class="comment-header-container">
+                                <p>{comment.user_name}</p>
+                                <p class="comment-date">
+                                    {comment.created_at.split('T')[0]}
+                                </p>
+                            </div>
+                            {#if comment.is_user}
+                                <div class="comment-header-container">
+                                    <button
+                                        class="icon-button"
+                                        on:click={() => displayEditBox(comment)}
+                                        >⚙️</button
+                                    >
+                                    <button
+                                        class="icon-button"
+                                        on:click={() =>
+                                            removeComment(comment.comment_id)}
+                                        >🚮</button
+                                    >
+                                </div>
+                            {/if}
                         </div>
-                        <p>{comment.content}</p>
+                        {#if editingCommentId === comment.comment_id}
+                            <div class="edit-box">
+                                <input
+                                    type="text"
+                                    bind:value={newCommentsbyId[
+                                        comment.comment_id
+                                    ]}
+                                />
+                                <button on:click={() => uploadComment(comment)}
+                                    >Save</button
+                                >
+                            </div>
+                            <p
+                                class="error-message"
+                                style={'margin: 5px 0 0 0;'}
+                            >
+                                {updateErrorMessage}
+                            </p>
+                        {:else}
+                            <p>{comment.content}</p>
+                        {/if}
                     </div>
                 {/each}
             {/if}
@@ -171,15 +255,30 @@
 
     .comment-header {
         display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .comment-header-container {
+        display: flex;
         justify-content: flex-start;
         column-gap: 10px;
-        margin-bottom: 10px;
     }
 
     .comment-date {
         color: #6c757d;
         font-size: 12px;
         padding-top: 5px;
+    }
+
+    .icon-button {
+        appearance: none;
+        font-size: 15px;
+        padding: 0;
+        background-color: transparent;
+        border: none;
+        cursor: pointer;
     }
 
     .loader-box {
@@ -207,5 +306,11 @@
         100% {
             transform: rotate(360deg);
         }
+    }
+
+    .edit-box {
+        display: flex;
+        column-gap: 10px;
+        margin-top: 10px;
     }
 </style>
