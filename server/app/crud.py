@@ -372,7 +372,7 @@ def create_comment(db: Session, user_id: int, comment_create_request: schemas.Co
 
 
 def get_comments(db: Session, user_id: int, comment_get_request: schemas.CommentsGetRequest):
-    post_comments = db.query(models.Comment).filter(models.Comment.post_id == comment_get_request.post_id).all()
+    post_comments = db.query(models.Comment).filter(models.Comment.post_id == comment_get_request.post_id).order_by(models.Comment.id.desc()).all()
     
     if post_comments is None:
         return schemas.CommentsGetResponse(comments=[])
