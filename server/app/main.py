@@ -315,3 +315,13 @@ def update_comment(comment_update_request: schemas.CommentUpdateRequest, db: Ses
 @app.delete("/user/groups/posts/comments/delete")
 def delete_comment(comment_delete_request: schemas.CommentDeleteRequest, db: Session = Depends(get_db)):
     crud.delete_comment(db, comment_delete_request=comment_delete_request)
+    
+
+@app.get("/user/name/get", response_model=schemas.UserName)
+def get_user_name(request: Request, db: Session = Depends(get_db)):
+    return crud.get_user_name(db, user_id=request.state.user_id)
+
+
+@app.post("/user/name/update", response_model=schemas.UserName)
+def update_user_name(name: schemas.UserName, request: Request, db: Session = Depends(get_db)):
+    return crud.update_user_name(db, user_name=name.user_name, user_id=request.state.user_id)

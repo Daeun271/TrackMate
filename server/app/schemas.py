@@ -267,3 +267,7 @@ class CommentUpdateRequest(BaseModel):
 
 class CommentDeleteRequest(BaseModel):
     comment_id: int
+    
+
+class UserName(BaseModel):
+    user_name: str

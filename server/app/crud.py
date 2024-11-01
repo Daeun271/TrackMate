@@ -397,3 +397,19 @@ def update_comment(db: Session, comment_update_request: schemas.CommentUpdateReq
 def delete_comment(db: Session, comment_delete_request: schemas.CommentDeleteRequest):
     db.query(models.Comment).filter(models.Comment.id == comment_delete_request.comment_id).delete()
     db.commit()
+    
+
+def get_user_name(db: Session, user_id: int):
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if user is None:
+        return schemas.UserName(user_name="")
+    return schemas.UserName(user_name=user.user_name)
+
+
+def update_user_name(db: Session, user_id: int, user_name: str):
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if user is None:
+        return schemas.UserName(user_name="")
+    user.user_name = user_name
+    db.commit()
+    return schemas.UserName(user_name=user.user_name)
