@@ -5,6 +5,7 @@ import bcrypt
 import random
 import string
 from datetime import timedelta, datetime
+from fastapi import HTTPException
 
 def get_user(db: Session, user_id: int):
     return db.query(models.User).filter(models.User.id == user_id).first()
@@ -413,3 +414,22 @@ def update_user_name(db: Session, user_id: int, user_name: str):
     user.user_name = user_name
     db.commit()
     return schemas.UserName(user_name=user.user_name)
+
+
+def get_user_email(db: Session, user_id: int):
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if user is None:
+        return schemas.UserEmail(email="")
+    return schemas.UserEmail(email=user.email)
+
+def update_user_email(db: Session, user_id: int, email: str):
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if user is None:
+        return schemas.UserEmail(email="")
+    
+    if db.query(models.User).filter(models.User.email == email).first() is not None:
+        raise HTTPException(status_code=400, detail="email already in use")
+        
+    user.email = email
+    db.commit()
+    return schemas.UserEmail(email=user.email)

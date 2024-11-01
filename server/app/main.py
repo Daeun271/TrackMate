@@ -325,3 +325,13 @@ def get_user_name(request: Request, db: Session = Depends(get_db)):
 @app.post("/user/name/update", response_model=schemas.UserName)
 def update_user_name(name: schemas.UserName, request: Request, db: Session = Depends(get_db)):
     return crud.update_user_name(db, user_name=name.user_name, user_id=request.state.user_id)
+
+
+@app.get("/user/email/get", response_model=schemas.UserEmail)
+def get_user_email(request: Request, db: Session = Depends(get_db)):
+    return crud.get_user_email(db, user_id=request.state.user_id)
+
+
+@app.post("/user/email/update", response_model=schemas.UserEmail)
+def update_user_email(email: schemas.UserEmail, request: Request, db: Session = Depends(get_db)):
+    return crud.update_user_email(db, email=email.email, user_id=request.state.user_id)

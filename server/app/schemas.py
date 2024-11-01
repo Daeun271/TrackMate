@@ -4,6 +4,7 @@ from datetime import datetime, date
 from typing import Optional, List, Dict
 from fastapi import HTTPException
 from .models import TimeCategory
+import re
 
 
 class WaterIntake(BaseModel):
@@ -271,3 +272,25 @@ class CommentDeleteRequest(BaseModel):
 
 class UserName(BaseModel):
     user_name: str
+
+
+email_regex = re.compile(
+    r'^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$'
+)
+
+class UserEmail(BaseModel):
+    email: str
+    
+    @field_validator('email')
+    def validate_email(cls, v):
+        if not email_regex.fullmatch(v):
+            raise HTTPException(status_code=422, detail='invalid email')
+        
+        return v
+    
+    @field_validator('email')
+    def not_empty(cls, v):
+        if not v or not v.strip():
+            raise HTTPException(status_code=422, detail='empty email')
+        
+        return v
