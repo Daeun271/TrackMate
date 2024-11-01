@@ -2,7 +2,7 @@ import {
     updateUserEmail,
     validateUserPassword,
     updateUserPassword,
-} from '../api';
+} from '../../api';
 
 export async function updateEmail(newEmail) {
     try {

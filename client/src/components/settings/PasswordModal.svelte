@@ -1,7 +1,7 @@
 <script>
-    import Modal from '../components/Modal.svelte';
-    import Button from '../components/Button.svelte';
-    import Loader from '../components/Loader.svelte';
+    import Modal from '../Modal.svelte';
+    import Button from '../Button.svelte';
+    import Loader from '../Loader.svelte';
     import { validatePassword, updatePassword } from './user-field-validator';
     import { createEventDispatcher } from 'svelte';
 
@@ -17,7 +17,7 @@
 
     export let isOpen = false;
 
-    async function validateUserEmail() {
+    async function validateUserPassword() {
         if (isLoading) {
             return;
         }
@@ -97,8 +97,11 @@
     isPopup={true}
     on:close={() => {
         isLoading = false;
+        isLoading2 = false;
         password = '';
+        newPassword = '';
         errorMessage = '';
+        errorMessage2 = '';
         shouldBeValidated = true;
     }}
 >
@@ -118,7 +121,7 @@
                 <Button
                     bind:isLoading
                     isExpanded={true}
-                    on:click={validateUserEmail}
+                    on:click={validateUserPassword}
                 >
                     {#if isLoading}
                         <Loader></Loader>

@@ -1,8 +1,11 @@
 <script>
-    import Modal from '../components/Modal.svelte';
-    import Button from '../components/Button.svelte';
-    import { logoutFromCurrentDevice, logoutFromAllDevices } from '../user.js';
-    import { currentTab } from '../tabs.js';
+    import Modal from '../Modal.svelte';
+    import Button from '../Button.svelte';
+    import {
+        logoutFromCurrentDevice,
+        logoutFromAllDevices,
+    } from '../../user.js';
+    import { currentTab } from '../../tabs.js';
 
     export let isOpen = false;
 </script>

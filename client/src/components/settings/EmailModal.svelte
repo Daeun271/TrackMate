@@ -1,55 +1,56 @@
 <script>
-    import Modal from '../components/Modal.svelte';
-    import Button from '../components/Button.svelte';
-    import Loader from '../components/Loader.svelte';
-    import { getUserName, updateUserName } from '../api';
+    import Modal from '../Modal.svelte';
+    import Button from '../Button.svelte';
+    import Loader from '../Loader.svelte';
+    import { getUserEmail } from '../../api';
+    import { updateEmail } from './user-field-validator';
     import { createEventDispatcher } from 'svelte';
 
     const dispatch = createEventDispatcher();
 
-    let name = '';
-    let userName = '';
+    let email = '';
+    let userEmail = '';
     let isLoading = false;
     let errorMessage = '';
 
     export let isOpen = false;
 
-    async function getName() {
-        const res = await getUserName();
-        userName = res.user_name;
-        name = res.user_name;
+    async function getEmail() {
+        const res = await getUserEmail();
+        userEmail = res.email;
+        email = res.email;
     }
 
     $: {
         if (isOpen) {
-            getName();
+            getEmail();
         }
     }
 
-    async function updateName() {
+    async function updateUserEmail() {
         if (isLoading) {
             return;
         }
         isLoading = true;
 
-        if (name.trim() === '') {
-            errorMessage = 'Name cannot be empty';
+        if (email.trim() === '') {
+            errorMessage = 'Email cannot be empty';
             isLoading = false;
             return;
         }
 
-        if (name === userName) {
-            errorMessage = 'Please enter a new name';
+        if (email === userEmail) {
+            errorMessage = 'Please enter a new email';
             isLoading = false;
             return;
         }
 
         try {
-            const res = await updateUserName(name);
-            userName = res.user_name;
-            name = res.user_name;
+            const res = await updateEmail(email);
+            userEmail = res;
+            email = res;
         } catch (error) {
-            errorMessage = 'Failed to update name. Please try again';
+            errorMessage = error.message;
             isLoading = false;
             return;
         }
@@ -57,7 +58,7 @@
         isOpen = false;
         isLoading = false;
         errorMessage = '';
-        dispatch('success', { message: 'Name updated successfully' });
+        dispatch('success', { message: 'Email updated successfully' });
     }
 </script>
 
@@ -71,16 +72,16 @@
 >
     <div class="modal-wrapper">
         <div class="input-container">
-            <label for="name">Name<span class="required">*</span></label>
+            <label for="email">Email<span class="required">*</span></label>
             <input
-                type="text"
-                id="name"
-                name="name"
-                placeholder="Enter your new name"
-                bind:value={name}
+                type="email"
+                id="email"
+                name="email"
+                placeholder="Enter your new email"
+                bind:value={email}
             />
 
-            <Button bind:isLoading isExpanded={true} on:click={updateName}>
+            <Button bind:isLoading isExpanded={true} on:click={updateUserEmail}>
                 {#if isLoading}
                     <Loader></Loader>
                 {:else}

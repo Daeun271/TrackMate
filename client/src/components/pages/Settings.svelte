@@ -1,10 +1,10 @@
 <script>
-    import UserNameModal from '../../settings/UserNameModal.svelte';
-    import EmailModal from '../../settings/EmailModal.svelte';
-    import PasswordModal from '../../settings/PasswordModal.svelte';
-    import LogOutModal from '../../settings/LogOutModal.svelte';
-    import DeleteAccountModal from '../../settings/DeleteAccountModal.svelte';
-    import Toast from '../../settings/Toast.svelte';
+    import UserNameModal from '../settings/UserNameModal.svelte';
+    import EmailModal from '../settings/EmailModal.svelte';
+    import PasswordModal from '../settings/PasswordModal.svelte';
+    import LogOutModal from '../settings/LogOutModal.svelte';
+    import DeleteAccountModal from '../settings/DeleteAccountModal.svelte';
+    import Toast from '../settings/Toast.svelte';
 
     let isUserNameModalOpen = false;
     let isEmailModalOpen = false;
