@@ -328,3 +328,15 @@ export async function updateUserEmail(email) {
         email,
     });
 }
+
+export async function validateUserPassword(password) {
+    return await request('POST', 'user/password/validate', {
+        password,
+    });
+}
+
+export async function updateUserPassword(password) {
+    await request('POST', 'user/password/update', {
+        password,
+    });
+}
