@@ -340,3 +340,7 @@ export async function updateUserPassword(password) {
         password,
     });
 }
+
+export async function deleteUserAccount() {
+    await request('Delete', 'user/delete');
+}
