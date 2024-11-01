@@ -60,8 +60,7 @@
 <Modal
     bind:isOpen
     isPopup={true}
-    on:close={async () => {
-        isOpen = false;
+    on:close={() => {
         isLoading = false;
         errorMessage = '';
     }}
