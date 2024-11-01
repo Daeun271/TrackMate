@@ -39,7 +39,6 @@
         display: flex;
         flex-direction: column;
         row-gap: 20px;
-        height: 100dvh;
     }
 
     .wrapper {
