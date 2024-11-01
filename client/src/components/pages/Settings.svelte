@@ -4,12 +4,31 @@
     import PasswordModal from '../../settings/PasswordModal.svelte';
     import LogOutModal from '../../settings/LogOutModal.svelte';
     import DeleteAccountModal from '../../settings/DeleteAccountModal.svelte';
+    import Toast from '../../settings/Toast.svelte';
 
     let isUserNameModalOpen = false;
     let isEmailModalOpen = false;
     let isPasswordModalOpen = false;
     let isLogOutModalOpen = false;
     let isDeleteAccountModalOpen = false;
+
+    let success = false;
+    let message = '';
+    let lastTimeout = null;
+
+    function onSuccess(msg) {
+        if (lastTimeout) {
+            clearTimeout(lastTimeout);
+        }
+
+        message = msg;
+        success = true;
+
+        lastTimeout = setTimeout(() => {
+            success = false;
+            message = '';
+        }, 1500);
+    }
 </script>
 
 <div class="background">
@@ -26,11 +45,27 @@
             >Delete account</button
         >
     </div>
+    <Toast {success} {message}></Toast>
 </div>
 
-<UserNameModal bind:isOpen={isUserNameModalOpen}></UserNameModal>
-<EmailModal bind:isOpen={isEmailModalOpen}></EmailModal>
-<PasswordModal bind:isOpen={isPasswordModalOpen}></PasswordModal>
+<UserNameModal
+    bind:isOpen={isUserNameModalOpen}
+    on:success={(event) => {
+        onSuccess(event.detail.message);
+    }}
+></UserNameModal>
+<EmailModal
+    bind:isOpen={isEmailModalOpen}
+    on:success={(event) => {
+        onSuccess(event.detail.message);
+    }}
+></EmailModal>
+<PasswordModal
+    bind:isOpen={isPasswordModalOpen}
+    on:success={(event) => {
+        onSuccess(event.detail.message);
+    }}
+></PasswordModal>
 <LogOutModal bind:isOpen={isLogOutModalOpen}></LogOutModal>
 <DeleteAccountModal bind:isOpen={isDeleteAccountModalOpen}></DeleteAccountModal>
 
@@ -39,6 +74,9 @@
         display: flex;
         flex-direction: column;
         row-gap: 20px;
+
+        height: 100%;
+        position: relative;
     }
 
     .wrapper {

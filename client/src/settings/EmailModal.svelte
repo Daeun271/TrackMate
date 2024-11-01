@@ -3,7 +3,10 @@
     import Button from '../components/Button.svelte';
     import Loader from '../components/Loader.svelte';
     import { getUserEmail } from '../api';
-    import { updateEmail } from './email-validator';
+    import { updateEmail } from './user-field-validator';
+    import { createEventDispatcher } from 'svelte';
+
+    const dispatch = createEventDispatcher();
 
     let email = '';
     let userEmail = '';
@@ -55,6 +58,7 @@
         isOpen = false;
         isLoading = false;
         errorMessage = '';
+        dispatch('success', { message: 'Email updated successfully' });
     }
 </script>
 

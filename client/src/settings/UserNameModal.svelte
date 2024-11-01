@@ -3,6 +3,9 @@
     import Button from '../components/Button.svelte';
     import Loader from '../components/Loader.svelte';
     import { getUserName, updateUserName } from '../api';
+    import { createEventDispatcher } from 'svelte';
+
+    const dispatch = createEventDispatcher();
 
     let name = '';
     let userName = '';
@@ -54,6 +57,7 @@
         isOpen = false;
         isLoading = false;
         errorMessage = '';
+        dispatch('success', { message: 'Name updated successfully' });
     }
 </script>
 
