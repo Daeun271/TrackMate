@@ -3,6 +3,14 @@ export const unauthorizedEvent = new EventEmitter();
 
 let hostUrl = 'http://127.0.0.1:8000/';
 
+class ApiError extends Error {
+    constructor(detail) {
+        super(detail);
+        this.name = 'ApiError';
+        this.detail = detail;
+    }
+}
+
 export async function request(
     method = 'GET',
     endpoint,
@@ -41,7 +49,7 @@ export async function request(
 
     let data = await response.json();
     if (!response.ok) {
-        throw new Error(data.detail);
+        throw new ApiError(data.detail);
     }
     return data;
 }
@@ -308,5 +316,15 @@ export async function getUserName() {
 export async function updateUserName(name) {
     return await request('POST', 'user/name/update', {
         user_name: name,
+    });
+}
+
+export async function getUserEmail() {
+    return await request('GET', 'user/email/get');
+}
+
+export async function updateUserEmail(email) {
+    return await request('POST', 'user/email/update', {
+        email,
     });
 }
