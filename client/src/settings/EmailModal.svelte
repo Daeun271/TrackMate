@@ -2,18 +2,73 @@
     import Modal from '../components/Modal.svelte';
     import Button from '../components/Button.svelte';
     import Loader from '../components/Loader.svelte';
+    import { getUserEmail } from '../api';
+    import { updateEmail } from './email-validator';
 
     let email = '';
+    let userEmail = '';
     let isLoading = false;
     let errorMessage = '';
 
     export let isOpen = false;
+
+    async function getEmail() {
+        const res = await getUserEmail();
+        userEmail = res.email;
+        email = res.email;
+    }
+
+    $: {
+        if (isOpen) {
+            getEmail();
+        }
+    }
+
+    async function updateUserEmail() {
+        if (isLoading) {
+            return;
+        }
+        isLoading = true;
+
+        if (email.trim() === '') {
+            errorMessage = 'Email cannot be empty';
+            isLoading = false;
+            return;
+        }
+
+        if (email === userEmail) {
+            errorMessage = 'Please enter a new email';
+            isLoading = false;
+            return;
+        }
+
+        try {
+            const res = await updateEmail(email);
+            userEmail = res;
+            email = res;
+        } catch (error) {
+            errorMessage = error.message;
+            isLoading = false;
+            return;
+        }
+
+        isOpen = false;
+        isLoading = false;
+        errorMessage = '';
+    }
 </script>
 
-<Modal bind:isOpen isPopup={true}>
+<Modal
+    bind:isOpen
+    isPopup={true}
+    on:close={() => {
+        isLoading = false;
+        errorMessage = '';
+    }}
+>
     <div class="modal-wrapper">
         <div class="input-container">
-            <label for="email">New Email<span class="required">*</span></label>
+            <label for="email">Email<span class="required">*</span></label>
             <input
                 type="email"
                 id="email"
@@ -22,7 +77,7 @@
                 bind:value={email}
             />
 
-            <Button bind:isLoading isExpanded={true}>
+            <Button bind:isLoading isExpanded={true} on:click={updateUserEmail}>
                 {#if isLoading}
                     <Loader></Loader>
                 {:else}
