@@ -19,7 +19,7 @@
                         currentTab.set('home');
                     }}
                 >
-                    <span>Log out from the current device</span>
+                    <span>Current Device</span>
                 </Button>
                 <Button
                     isExpanded={false}
@@ -28,7 +28,7 @@
                         currentTab.set('home');
                     }}
                 >
-                    <span>Log out from all devices</span>
+                    <span>All Devices</span>
                 </Button>
             </div>
         </div>
