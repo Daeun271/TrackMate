@@ -335,3 +335,13 @@ def get_user_email(request: Request, db: Session = Depends(get_db)):
 @app.post("/user/email/update", response_model=schemas.UserEmail)
 def update_user_email(email: schemas.UserEmail, request: Request, db: Session = Depends(get_db)):
     return crud.update_user_email(db, email=email.email, user_id=request.state.user_id)
+
+
+@app.post("/user/password/validate")
+def validate_user_password(password: schemas.UserPassword, request: Request, db: Session = Depends(get_db)) -> bool:
+    return crud.validate_user_password(db, password=password.password, user_id=request.state.user_id)
+
+
+@app.post("/user/password/update")
+def update_user_password(password: schemas.UserPassword, request: Request, db: Session = Depends(get_db)):
+    crud.update_user_password(db, password=password.password, user_id=request.state.user_id)

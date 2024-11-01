@@ -433,3 +433,28 @@ def update_user_email(db: Session, user_id: int, email: str):
     user.email = email
     db.commit()
     return schemas.UserEmail(email=user.email)
+
+
+def validate_user_password(db: Session, user_id: int, password: str):
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if user is None:
+        return False
+    
+    if not bcrypt.checkpw(password.encode('utf-8'), user.hashed_password):
+        raise HTTPException(status_code=400, detail="wrong password")
+    
+    return True
+
+
+def update_user_password(db: Session, user_id: int, password: str):
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if user is None:
+        return
+    
+    if bcrypt.checkpw(password.encode('utf-8'), user.hashed_password):
+        raise HTTPException(status_code=400, detail="same password")
+    
+    password_salt = bcrypt.gensalt()
+    hashed_password = bcrypt.hashpw(password.encode('utf-8'), password_salt)
+    user.hashed_password = hashed_password
+    db.commit()

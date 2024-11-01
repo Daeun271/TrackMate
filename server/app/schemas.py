@@ -294,3 +294,20 @@ class UserEmail(BaseModel):
             raise HTTPException(status_code=422, detail='empty email')
         
         return v
+
+
+class UserPassword(BaseModel):
+    password: str
+    
+    @field_validator('password')
+    def validate_password(cls, v):
+        if len(v) < 8:
+            raise HTTPException(status_code=422, detail='Password must be at least 8 characters')
+        
+        if not any(char.isdigit() for char in v):
+            raise HTTPException(status_code=422, detail='Password must have at least one numeral')
+        
+        if not any(char.isalpha() for char in v):
+            raise HTTPException(status_code=422, detail='Password must have at least one letter')
+        
+        return v
