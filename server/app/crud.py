@@ -458,3 +458,17 @@ def update_user_password(db: Session, user_id: int, password: str):
     hashed_password = bcrypt.hashpw(password.encode('utf-8'), password_salt)
     user.hashed_password = hashed_password
     db.commit()
+    
+
+def delete_user(db: Session, user_id: int):
+    db.query(models.WaterIntake).filter(models.WaterIntake.user_id == user_id).delete()
+    db.query(models.FoodIntake).filter(models.FoodIntake.user_id == user_id).delete()
+    db.query(models.Exercise).filter(models.Exercise.user_id == user_id).delete()
+    
+    db.query(models.Comment).filter(models.Comment.user_id == user_id).delete()
+    db.query(models.Post).filter(models.Post.user_id == user_id).delete()
+    db.query(models.group_member).filter(models.group_member.c.user_id == user_id).delete()
+    
+    db.query(models.Session).filter(models.Session.user_id == user_id).delete()
+    db.query(models.User).filter(models.User.id == user_id).delete()
+    db.commit()

@@ -345,3 +345,8 @@ def validate_user_password(password: schemas.UserPassword, request: Request, db:
 @app.post("/user/password/update")
 def update_user_password(password: schemas.UserPassword, request: Request, db: Session = Depends(get_db)):
     crud.update_user_password(db, password=password.password, user_id=request.state.user_id)
+    
+
+@app.delete("/user/delete")
+def delete_user(request: Request, db: Session = Depends(get_db)):
+    crud.delete_user(db, user_id=request.state.user_id)
