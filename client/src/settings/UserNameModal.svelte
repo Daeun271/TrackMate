@@ -2,18 +2,73 @@
     import Modal from '../components/Modal.svelte';
     import Button from '../components/Button.svelte';
     import Loader from '../components/Loader.svelte';
+    import { getUserName, updateUserName } from '../api';
 
     let name = '';
+    let userName = '';
     let isLoading = false;
     let errorMessage = '';
 
     export let isOpen = false;
+
+    async function getName() {
+        const res = await getUserName();
+        userName = res.user_name;
+        name = res.user_name;
+    }
+
+    $: {
+        if (isOpen) {
+            getName();
+        }
+    }
+
+    async function updateName() {
+        if (isLoading) {
+            return;
+        }
+        isLoading = true;
+
+        if (name.trim() === '') {
+            errorMessage = 'Name cannot be empty';
+            isLoading = false;
+            return;
+        }
+
+        if (name === userName) {
+            errorMessage = 'Please enter a new name';
+            isLoading = false;
+            return;
+        }
+
+        try {
+            const res = await updateUserName(name);
+            userName = res.user_name;
+            name = res.user_name;
+        } catch (error) {
+            errorMessage = 'Failed to update name. Please try again';
+            isLoading = false;
+            return;
+        }
+
+        isOpen = false;
+        isLoading = false;
+        errorMessage = '';
+    }
 </script>
 
-<Modal bind:isOpen isPopup={true}>
+<Modal
+    bind:isOpen
+    isPopup={true}
+    on:close={async () => {
+        isOpen = false;
+        isLoading = false;
+        errorMessage = '';
+    }}
+>
     <div class="modal-wrapper">
         <div class="input-container">
-            <label for="name">New Name<span class="required">*</span></label>
+            <label for="name">Name<span class="required">*</span></label>
             <input
                 type="text"
                 id="name"
@@ -22,7 +77,7 @@
                 bind:value={name}
             />
 
-            <Button bind:isLoading isExpanded={true}>
+            <Button bind:isLoading isExpanded={true} on:click={updateName}>
                 {#if isLoading}
                     <Loader></Loader>
                 {:else}
