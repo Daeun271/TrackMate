@@ -300,3 +300,13 @@ export async function deleteComment(commentId) {
         comment_id: commentId,
     });
 }
+
+export async function getUserName() {
+    return await request('GET', 'user/name/get');
+}
+
+export async function updateUserName(name) {
+    return await request('POST', 'user/name/update', {
+        user_name: name,
+    });
+}
