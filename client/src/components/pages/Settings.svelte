@@ -96,8 +96,4 @@
         font-size: 18px;
         cursor: pointer;
     }
-
-    .wrapper > button:hover {
-        background-color: #f0f0f0;
-    }
 </style>
