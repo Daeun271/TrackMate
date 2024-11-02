@@ -53,7 +53,7 @@
 
     let today = formatDate(new Date());
     let date = today;
-    async function showYesterday(event) {
+    async function showDataForTheDay(event) {
         waterIntakePromise = await getWaterIntakesTotal(event.detail);
         date = event.detail;
     }
@@ -63,7 +63,11 @@
     }
 </script>
 
-<DatePicker on:showYesterday={showYesterday} on:showData={showData} bind:date
+<DatePicker
+    on:showYesterday={showDataForTheDay}
+    on:showData={showData}
+    on:showTomorrow={showDataForTheDay}
+    bind:date
 ></DatePicker>
 <div class="waterintake-wrapper">
     {#await waterIntakePromise}

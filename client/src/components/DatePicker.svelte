@@ -32,6 +32,10 @@
 
         if (newDate <= today) {
             date = newDate;
+            dispatch('showTomorrow', newDate);
+        } else {
+            date = today;
+            dispatch('showTomorrow', today);
         }
     }
 </script>
