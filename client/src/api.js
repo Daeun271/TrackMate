@@ -1,7 +1,7 @@
 import { EventEmitter } from './event-emitter.js';
 export const unauthorizedEvent = new EventEmitter();
 
-let hostUrl = 'http://127.0.0.1:8000/';
+let hostUrl = '/';
 
 class ApiError extends Error {
     constructor(detail) {
