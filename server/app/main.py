@@ -7,6 +7,7 @@ from .database import SessionLocal, engine
 import bcrypt
 from typing import Optional
 import os
+from fastapi.staticfiles import StaticFiles
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -45,8 +46,11 @@ def get_request_auth_user_id(request: Request) -> Optional[int]:
 async def auth_middleware(request: Request, call_next):
     if request.method == "OPTIONS":
         return await call_next(request)
+    
+    if request.url.path.startswith("/assets") or request.url.path.startswith("/icons") or request.url.path.startswith("/images"):
+        return await call_next(request)
 
-    whitelist = ["/user/register", "/user/login", "/docs", "/openapi.json"]
+    whitelist = ["/user/register", "/user/login", "/docs", "/openapi.json", "/", "/index.html", "/manifest.json"]
     
     if request.url.path in whitelist:
         return await call_next(request)
@@ -350,3 +354,6 @@ def update_user_password(password: schemas.UserPassword, request: Request, db: S
 @app.delete("/user/delete")
 def delete_user(request: Request, db: Session = Depends(get_db)):
     crud.delete_user(db, user_id=request.state.user_id)
+
+
+app.mount("/", StaticFiles(directory="static", html=True), name="static")
