@@ -20,7 +20,7 @@ TrackMate is a WebApp for tracking sports and wellness data with friends. With T
 ### Client
 
 You can click
-[here](./client) to get to the readme of the server
+[here](./client) to get to the readme of the client
 
 [![My Skills](https://skillicons.dev/icons?i=javascript,svelte,html,css)](https://skillicons.dev)
 
